@@ -1,0 +1,491 @@
+openapi: 3.0.0
+info:
+  title: go-court API
+  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 0.1.9
+servers:
+  - url: http://api.example.com/v1
+    description: Optional server description, e.g. Main (production) server
+  - url: http://staging-api.example.com
+    description: Optional server description, e.g. Internal staging server for testing
+
+tags:
+  - name: Accounts
+  - name: Login
+  - name: Games
+  - name: Courts
+  - name: Files
+
+components:
+  schemas:
+    Pages:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+      example:
+        page: 0
+        size: 8
+        total: 8 
+
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+      example:
+        user_id: 'user_id'
+        email: 'user@email.com'
+    
+    StockItems: 
+      type: array
+      items: 
+        type: object
+        properties: 
+          game_id:
+            type: string
+          name:
+            type: string
+          stock:
+            type: integer
+        example: 
+          game_id: 'game-123456789'
+          name: '男生'
+          stock: 15
+          
+    Game: 
+      type: object 
+      properties: 
+        game_name:
+          type: string
+        game_id:
+          type: string
+        host_id:
+          type: string
+        game_start_at :
+          type: string
+          format: date-time 
+        game_end_at :
+          type: string
+          format: date-time 
+        sell_start_at :
+          type: string
+          format: date-time 
+        sell_end_at :
+          type: string
+          format: date-time 
+        max_player_number:
+          type: integer
+        spec:
+          $ref: '#components/schemas/StockItems'
+        court_type :
+          type: string
+        net_type:
+          type: string
+        is_public:
+          type: boolean
+        deleted:
+          type: boolean
+        fee:
+          type: integer
+        description:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+      example: 
+        game_id: 'game-123456789'
+        host_id: 'user-123456789'
+        game_name: '比賽名稱'
+        start_at : '2017-07-21T17:32:28Z'
+        end_at : '2017-07-21T17:32:28Z'
+        max_player_number: '18'
+        court_type : '室內場'
+        net_type: '男網'
+        fee: 150
+        description: '比賽簡介'
+        is_public: true
+        deleted: false
+        created_at : '2017-07-21T17:32:28Z'
+        updated_at : '2017-07-21T17:32:28Z'
+
+   
+
+    Court: 
+      type: object 
+      properties: 
+        name:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        phone:
+          type: string
+        logo_url:
+          type: string
+        updated_at:
+          type: string
+          format: date-time 
+        open_status:
+          type: string
+          enum: [FREE, CLOSE, PAID]
+        court_id:
+          type: string
+        description:
+          type: string
+      example: 
+        name: '排球場'
+        address: '中正路一段'
+        latitude: 24.254674
+        longitude: 121.46445
+        phone: '0978456123'
+        logo_url: 'logo_url.com'
+        updated_at: '2017-07-21T17:32:28Z'
+        open_status: 'FREE'
+        court_id: '123'
+        description: 'DESCRIPTION'
+        
+    File:
+      type: object
+      properties:
+        file_name:
+          type: string
+        reference_id:
+          type: array
+          items: 
+            type: string
+        description:
+          type: string
+        meta:
+          type: object
+      example:
+        file_name: 'file_name'
+        reference_id:  ['user-123456789']
+        description:  ""
+        meta: { info: 'info' }
+  parameters:
+    page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        default: 0    
+    size:
+      in: query
+      name: size
+      schema:
+        type: integer
+        default: 10    
+    
+paths:
+  # 帳號管理
+  /accounts:
+    get:
+      summary: Return account profile
+      tags: 
+        - Accounts
+      description: ''
+      responses:
+        '200':    
+          description: return account
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/User'
+                  
+    post:
+      summary: Create a account
+      tags: 
+        - Accounts
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+            example:
+              email: 'user@email.com'
+              password: 'password123'
+              
+      responses:
+        '200':    
+          description: return new account
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/User'
+  # 登入
+  /login:
+    post:
+      summary: Login account and get auth token
+      tags: 
+        - Login
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+            example:
+              email: 'user@email.com'
+              password: 'password123'
+              
+      responses:
+        '200':    
+          description: login success
+  
+  #球賽 
+  /games:
+    get: 
+      summary: get games
+      tags: 
+        - Games
+      description: ''
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - in: query
+          name: city_code
+          schema:
+            type: string
+            example: '64000'  
+        - in: query
+          name: dist_code
+          schema:
+            type: string
+            example: '64000040'  
+      responses:
+        '200':    
+          description: return games
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content: 
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Game'
+                  pages:
+                    $ref: '#/components/schemas/Pages'
+
+    post:
+      summary: create game
+      tags: 
+        - Games
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Game'
+              
+      responses:
+        '200':    
+          description: return new account
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Game'
+
+  /games/{game_id}:
+    put:
+      summary: edit game
+      tags: 
+        - Games
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: string
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Game'
+              
+      responses:
+        '200':    
+          description: return new account
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Game'
+    delete:
+      summary: delete game
+      tags: 
+        - Games
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: string
+      description: ''
+      responses:
+        '204':    
+          description: delete success
+  
+  /games/join: 
+    put:
+      summary: user join game
+      tags: 
+        - Games
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object 
+              properties: 
+                stock_id:
+                  type: string
+                game_id:
+                  type: string
+      responses:
+        '200':    
+          description: return new account
+
+  /courts:
+    get: 
+      summary: get courts
+      tags: 
+        - Courts
+      description: ''
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+      responses:
+        '200':    
+          description: return courts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content: 
+                    type: array
+                    items: 
+                      $ref: '#/components/schemas/Court'
+                  # pages:
+                  #   $ref: '#/components/schemas/Pages'
+  
+  /files:
+    get:
+      summary: get file entity
+      tags: 
+        - Files
+      description: ''
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+      responses:
+        '200':    
+          description: return new account
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/File'
+              
+    post:
+      summary: create file entity
+      tags: 
+        - Files
+      description: ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/File'
+      responses:
+        '200':    
+          description: ''
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/File'
+
+  /files/{file_id}:
+    put:
+      summary: edit file entity
+      tags: 
+        - Files
+      description: "Can't edit reference_id"
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/File'
+      responses:
+        '200':    
+          description: ''
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/File'
+              
+  /files/{file_id}/content:
+    put:
+      summary: edit file content
+      tags: 
+        - Files
+      description: ''
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content: 
+          multipart/form-data: # Media type
+            schema:   
+              type: object
+              properties:           # Request payload
+                file:  
+                  type: string
+                  format: binary
+      responses:
+        '200':    
+          description: ''
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/File'
+         
+               
