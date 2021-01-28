@@ -6,7 +6,7 @@
 - import db
 `cat dump.sql | docker exec -i {container_id} psql -U postgres`
 - cd to container
-`docker exec -it <mycontainer> bash`
+`docker exec -it <mycontainer> sh`
 - run psql on container
 `docker exec -it mydb psql -U postgres -d your_database`
 - import csv to table 
