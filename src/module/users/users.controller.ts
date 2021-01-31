@@ -5,20 +5,34 @@ import {
   Put,
   Delete,
   Param,
-  Body
+  Body,
+  Query,
+  UseFilters,
+  HttpException,
+  HttpStatus,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
-@Controller('users')
+@Controller()
 export class UserController {
   constructor(
     private readonly userService: UsersService
   ) { }
 
-  @Get()
-  async allUsers(): Promise<Object> {
-    return 'users'
-    // return this.userService.getAllUser();
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  async getSelfProfile(@Req() req): Promise<Object> {
+    console.log('req', req.payload)
+    return 'profile'
+    // return this.userService.findOne(reqQuery);
+  }
+
+  @Get('users')
+  async queryUsers(@Query() reqQuery): Promise<Object> {
+    return this.userService.queryUsers(reqQuery);
   }
 
   // @Get('user/:userId')
@@ -26,9 +40,14 @@ export class UserController {
   //   return this.userService.getUserById(id);
   // }
 
-  @Post()
-  async addUser(@Body() reqBody): Promise<Object> {
+  @Post('users')
+  async register(@Body() reqBody) {
     return this.userService.addUser(reqBody)
+      .catch(error => {
+        if (error.code === '23505')
+          throw new HttpException('duplicate email', HttpStatus.BAD_REQUEST)
+        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
+      })
   }
 
   // @Put('user/:userId')

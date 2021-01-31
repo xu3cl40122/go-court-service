@@ -1,5 +1,5 @@
-version: '3.8' 
-services:   
+version: "3.8"
+services:
   main:
     container_name: main
     build:
@@ -14,27 +14,27 @@ services:
       - 3000:3000
     restart: unless-stopped
     command: npm run start:dev
-  
+
   postgres:
     container_name: postgres_container
     image: kartoza/postgis
-    env_file: 
+    env_file:
       - db.env
     volumes:
-       - postgres:/data/postgres
+      - postgres:/data/postgres
     ports:
       - "5432:5432"
     networks:
       - postgres
     restart: unless-stopped
-  
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4
-    env_file: 
+    env_file:
       - db.env
     volumes:
-       - pgadmin:/root/.pgadmin
+      - pgadmin:/root/.pgadmin
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
@@ -46,5 +46,5 @@ networks:
     driver: bridge
 
 volumes:
-    postgres:
-    pgadmin:
+  postgres:
+  pgadmin:

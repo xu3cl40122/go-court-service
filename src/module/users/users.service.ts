@@ -23,4 +23,30 @@ export class UsersService {
     user.password = hashedPwd
     return await this.usersRepository.save(user);
   }
+
+  async queryUsers(reqQuery: { page, size }): Promise<Object> {
+    let [page, size] = [Number(reqQuery.page), Number(reqQuery.size)]
+    let [content, total] = await this.usersRepository.findAndCount({
+      take: size,
+      skip: page * size,
+      order: {
+        created_at: "DESC"
+      }
+    })
+
+    return { content, page, size, total }
+  }
+
+  async findOne(queryObj: { email?: string, user_id?: string }) {
+    return await this.usersRepository.findOne(queryObj)
+  }
+
+  async findUserWithPwd({ email }) {
+    return await this.usersRepository
+      .createQueryBuilder('user')
+      .where("user.email = :email", { email })
+      .addSelect("user.password")
+      .getOne();
+  }
+
 }

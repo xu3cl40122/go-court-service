@@ -9,5 +9,7 @@ import { User } from '../../entity/user.entity';
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
   providers: [UsersService],
+  // 開放給其他人用
+  exports: [UsersService]
 })
 export class UsersModule { }
