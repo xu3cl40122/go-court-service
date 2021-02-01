@@ -29,7 +29,7 @@ export class UsersService {
     ]
     let changedPart = {}
     columns.forEach(key => changedPart[key] = userData[key])
-    let { raw, affected } = await this.usersRepository
+    let { raw } = await this.usersRepository
       .createQueryBuilder()
       .update(User)
       .set(changedPart)
@@ -38,11 +38,11 @@ export class UsersService {
       .execute();
 
     raw.forEach(user => delete user.email)
-    return { raw, affected }
+    return raw?.[0]
   }
 
   async queryUsers(reqQuery: { page, size }): Promise<Object> {
-    let [page, size] = [Number(reqQuery.page), Number(reqQuery.size)]
+    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
     let [content, total] = await this.usersRepository.findAndCount({
       take: size,
       skip: page * size,

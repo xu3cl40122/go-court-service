@@ -6,6 +6,8 @@ import { Connection } from 'typeorm';
 import { UsersModule } from './module/users/users.module'
 import { AuthModule } from './module/auth/auth.module'
 import { ConfigModule } from '@nestjs/config';
+import { CourtModule } from './module/courts/courts.module';
+import { GamesModule } from './module/games/games.module';
 
 @Module({
   imports: [
@@ -17,7 +19,9 @@ import { ConfigModule } from '@nestjs/config';
     }),
    
     UsersModule,
-    AuthModule
+    AuthModule,
+    CourtModule,
+    GamesModule
   ],
   controllers: [AppController],
   providers: [AppService],

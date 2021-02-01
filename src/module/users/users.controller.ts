@@ -20,7 +20,7 @@ export class UserController {
   constructor(
     private readonly userService: UsersService
   ) { }
-  
+
   @Post('users')
   async register(@Body() reqBody) {
     return this.userService.addUser(reqBody)
@@ -39,7 +39,7 @@ export class UserController {
 
   @Put('profile')
   @UseGuards(JwtAuthGuard)
-  async putSelfProfile(@Req() req, @Body() userData): Promise<Object> {
+  async updateSelfProfile(@Req() req, @Body() userData): Promise<Object> {
     let { raw, affected } = await this.userService.editUser(req.payload.user_id, userData);
     if (affected === 0 || !raw?.[0])
       throw new HttpException('user_id not found', HttpStatus.BAD_REQUEST)
@@ -61,10 +61,10 @@ export class UserController {
   @Put('users/:user_id')
   @UseGuards(JwtAuthGuard)
   async updateUserById(@Param('user_id') id: string, @Body() userData): Promise<Object> {
-    let { raw, affected } = await this.userService.editUser(id, userData);
-    if (affected === 0 || raw?.[0])
-      throw new HttpException('user_id not found', HttpStatus.BAD_REQUEST)
-    return raw[0]
+    let user = await this.userService.editUser(id, userData);
+    if (!user) throw new HttpException('user_id not found', HttpStatus.BAD_REQUEST)
+
+    return user
   }
 
   // @Delete('user/:userId')
