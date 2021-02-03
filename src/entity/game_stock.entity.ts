@@ -1,12 +1,12 @@
 import {
   Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  Column, ManyToOne, OneToMany, OneToOne, JoinColumn
+  Column, ManyToOne, Check
 } from "typeorm";
-import { User } from './user.entity'
 import { Game } from './game.entity'
 
 
 @Entity()
+@Check(`"stock_amount" > 0`)
 export class GameStock {
   @PrimaryGeneratedColumn("uuid")
   game_stock_id: string;
@@ -20,9 +20,7 @@ export class GameStock {
   })
   spec_name: string;
 
-  @Column({
-    type: "integer",
-  })
+  @Column('integer')
   stock_amount: number;
 
   @Column({

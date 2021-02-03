@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { getManager } from "typeorm";
 import { Game } from '../../entity/game.entity';
 import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
+import { IPageQuery } from '../../interface/index';
 
-interface IGameQueryParams {
+interface IGameQueryParams extends IPageQuery {
   court_type?: string,
   game_type?: string,
-  page?: string | number,
-  size?: string | number,
+}
+
+interface IBuyGameTicketBody {
+  game_id: string,
+  game_stock_id: string,
+  owner_user_id: string,
+  stock_amount: number,
 }
 
 @Injectable()
@@ -20,7 +27,7 @@ export class GamesService {
     @InjectRepository(GameUser) private gameUsersRepository: Repository<GameUser>,
     @InjectRepository(GameTicket) private gameTicketsRepository: Repository<GameTicket>,
     @InjectRepository(GameStock) private gameStockRepository: Repository<GameStock>,
-    ) { }
+  ) { }
 
   async queryGames(reqQuery: IGameQueryParams): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
@@ -32,7 +39,7 @@ export class GamesService {
       where,
       take: size,
       skip: page * size,
-      relations: ["host_user_detail", "game_stock_detail"],
+      relations: ["host_user_detail", "game_stock"],
       order: {
         created_at: "DESC"
       }
@@ -43,6 +50,21 @@ export class GamesService {
 
   async findOne(queryObj: { game_id?: string }) {
     return await this.gamesRepository.findOne(queryObj)
+  }
+
+  async queryGameTickets(reqQuery: IPageQuery): Promise<Object> {
+    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
+
+    let [content, total] = await this.gameTicketsRepository.findAndCount({
+      take: size,
+      skip: page * size,
+      relations: ['game_detail', 'game_stock_detail'],
+      order: {
+        created_at: 'DESC'
+      }
+    })
+
+    return { content, page, size, total }
   }
 
   async addGame(gameData: Game): Promise<Object> {
@@ -99,5 +121,27 @@ export class GamesService {
 
   async updateGameStock(stockArr: GameStock[]) {
     return await this.gameStockRepository.save(stockArr)
+  }
+
+  async checkout(carts: IBuyGameTicketBody[]) {
+    let resArr = []
+    await getManager().transaction(async manager => {
+      for (let cartItem of carts) {
+        let { game_id, game_stock_id, stock_amount, owner_user_id } = cartItem
+        await manager.createQueryBuilder()
+          .update(GameStock)
+          .set({ stock_amount: () => `stock_amount - ${stock_amount}` })
+          .where("game_stock_id = :game_stock_id", { game_stock_id })
+          .execute()
+
+        let gameTicketArr = Array(stock_amount).fill('').map(d => {
+          return new GameTicket({ game_id, game_stock_id, owner_user_id })
+        })
+        let newTickets = await manager.save(gameTicketArr)
+        resArr.push(...newTickets)
+      }
+
+    });
+    return resArr
   }
 }

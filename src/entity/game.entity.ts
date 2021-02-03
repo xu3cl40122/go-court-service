@@ -40,7 +40,7 @@ export class Game {
   court_detail: string;
 
   @OneToMany(() => GameStock, gameStock => gameStock.game_id)
-  game_stock_detail: GameStock[]
+  game_stock: GameStock[]
 
   @Column({
     type: "timestamp",
