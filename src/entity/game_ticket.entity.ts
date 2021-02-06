@@ -6,6 +6,8 @@ import { User } from './user.entity'
 import { Game } from './game.entity'
 import { GameStock } from './game_stock.entity'
 
+export enum GameTicketStatus { PENDING, PAID }
+
 
 @Entity()
 export class GameTicket {
@@ -38,6 +40,13 @@ export class GameTicket {
   @ManyToOne(() => User, user => user.user_id)
   @JoinColumn({ name: 'owner_user_id' })
   owner_user_detail: User;
+
+  @Column({
+    type: "varchar",
+    enum: GameTicketStatus,
+    default: 'PENDING'
+  })
+  game_ticket_status: string;
 
   @CreateDateColumn()
   created_at: Date;

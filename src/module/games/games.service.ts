@@ -48,23 +48,28 @@ export class GamesService {
     return { content, page, size, total }
   }
 
-  async findOne(queryObj: { game_id?: string }) {
+  async findGame(queryObj: { game_id?: string }) {
     return await this.gamesRepository.findOne(queryObj)
   }
 
-  async queryGameTickets(reqQuery: IPageQuery): Promise<Object> {
+  async queryTicketsOfUserId(owner_user_id, reqQuery: IPageQuery): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
 
     let [content, total] = await this.gameTicketsRepository.findAndCount({
       take: size,
       skip: page * size,
       relations: ['game_detail', 'game_stock_detail'],
+      where: [{ owner_user_id }],
       order: {
         created_at: 'DESC'
       }
     })
 
     return { content, page, size, total }
+  }
+
+  async findGameTicket(queryObj: { game_ticket_id?: string }) {
+    return await this.gameTicketsRepository.findOne(queryObj)
   }
 
   async addGame(gameData: Game): Promise<Object> {
@@ -144,4 +149,36 @@ export class GamesService {
     });
     return resArr
   }
+
+  async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
+    let { game_stock_id, game_ticket_id } = gameTicket
+    let { game_id } = game
+    return await getManager().transaction(async manager => {
+      await manager.createQueryBuilder()
+        .update(GameTicket)
+        .set({ game_ticket_status: 'PAID' })
+        .where("game_ticket_id = :game_ticket_id", { game_ticket_id })
+        .execute()
+
+      let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id })
+      return await manager.save(gameUser)
+    })
+
+  }
+
+  async queryGameUsers(game_id, query: IPageQuery) {
+    let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
+    let [content, total] = await this.gameUsersRepository.findAndCount({
+      where: [{ game_id }],
+      relations: ["game_ticket_detail", "game_stock_detail", 'game_user_detail'],
+      take: size,
+      skip: page * size,
+      order: {
+        created_at: "DESC"
+      }
+    })
+
+    return { content, page, size, total }
+  }
+
 }
