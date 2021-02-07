@@ -2,12 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
+import { Verification, VerificationType } from '../../entity/verification.entity';
+import { generateVerificationCode } from '../../methods/'
+import { MessageService } from '../message/message.service'
+import * as dayjs from 'dayjs'
 import * as bcrypt from 'bcrypt'
+import { isRgbColor } from 'class-validator';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    @InjectRepository(Verification) private verificationRepository: Repository<Verification>,
+    private messageService: MessageService
   ) { }
 
   async addUser(userData: User): Promise<Object> {
@@ -21,6 +28,47 @@ export class UsersService {
     let hashedPwd = await bcrypt.hash(userData.password, saltRound)
     user.password = hashedPwd
     return await this.usersRepository.save(user);
+  }
+
+  async sendVerification(user_id: string, verification_type: string, expireMinute = 5, resendMinute = 3) {
+    let [user, lastVerification] = await Promise.all([this.findUser({ user_id }), this.findVerification({ user_id })])
+    if (user.user_status !== 'INITIAL')
+      throw 'not initial user'
+    if (!dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
+      throw 'request later'
+
+    let verification_code = generateVerificationCode()
+    let expires_at = dayjs().add(expireMinute, 'minute')
+    let verifaction = new Verification({ user_id, verification_type, verification_code, expires_at })
+    await this.verificationRepository.save(verifaction)
+
+    return await this.messageService.sendMessage({
+      ToAddresses: [user.email],
+      template: 'VERIFY_EMAIL',
+      args: { verification_code }
+    })
+
+  }
+
+  async enableUser(user_id: string, verification_code: string) {
+    let verification_type = 'ENABLE_ACCOUNT'
+    let verification = await this.verificationRepository.findOne({
+      where: { user_id, verification_type },
+      order: { created_at: 'DESC' }
+    })
+
+    if (dayjs(verification.expires_at).isBefore(dayjs()))
+      throw 'code expired'
+    if (verification.verification_code !== verification_code)
+      throw 'wrong verification code'
+
+    return await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ user_status: 'ENABLED' })
+      .where("user_id = :user_id", { user_id })
+      .returning('*')
+      .execute();
   }
 
   async editUser(user_id: string, userData: User): Promise<any> {
@@ -54,8 +102,8 @@ export class UsersService {
     return { content, page, size, total }
   }
 
-  async findOne(queryObj: { email?: string, user_id?: string }) {
-    return await this.usersRepository.findOne(queryObj)
+  async findUser(query: { email?: string, user_id?: string }) {
+    return await this.usersRepository.findOne(query)
   }
 
   async findUserWithPwd({ email }) {
@@ -64,6 +112,13 @@ export class UsersService {
       .where("user.email = :email", { email })
       .addSelect("user.password")
       .getOne();
+  }
+
+  async findVerification(query: { user_id?: string, verification_id?: string }) {
+    return await this.verificationRepository.findOne({
+      where: query,
+      order: { created_at: 'DESC' }
+    })
   }
 
 }
