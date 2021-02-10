@@ -30,18 +30,20 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
-  async sendVerification(user_id: string, verification_type: string, expireMinute = 5, resendMinute = 3) {
-    let [user, lastVerification] = await Promise.all([this.findUser({ user_id }), this.findVerification({ user_id })])
-    if (user.user_status !== 'INITIAL')
-      throw 'not initial user'
-    if (!dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
+  async sendVerification(email: string, verification_type: string, expireMinute = 5, resendMinute = 3) {
+    let user = await this.findUser({ email })
+    if (!user) throw 'user not found'
+    if (user.user_status !== 'INITIAL') throw 'not initial user'
+    
+    let { user_id } = user
+    let lastVerification = await this.findVerification({ user_id })
+    if (lastVerification && !dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
       throw 'request later'
 
     let verification_code = generateVerificationCode()
     let expires_at = dayjs().add(expireMinute, 'minute')
     let verifaction = new Verification({ user_id, verification_type, verification_code, expires_at })
     await this.verificationRepository.save(verifaction)
-
     return await this.messageService.sendMessage({
       ToAddresses: [user.email],
       template: 'VERIFY_EMAIL',
@@ -50,7 +52,11 @@ export class UsersService {
 
   }
 
-  async enableUser(user_id: string, verification_code: string) {
+  async enableUser(email: string, verification_code: string) {
+    let user = await this.findUser({ email })
+    if (!user)
+      throw 'user not found'
+    let { user_id } = user
     let verification_type = 'ENABLE_ACCOUNT'
     let verification = await this.verificationRepository.findOne({
       where: { user_id, verification_type },

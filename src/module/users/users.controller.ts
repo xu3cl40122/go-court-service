@@ -35,28 +35,30 @@ export class UserController {
 
   // 發 email 驗證碼
   @Put('users/verification')
-  @UseGuards(JwtAuthGuard)
-  async sendVerification(@Req() req) {
+  async sendVerification(@Body() reqBody) {
     let verification_type = 'ENABLE_ACCOUNT'
-    return this.userService.sendVerification(req.payload.user_id, verification_type)
+    return this.userService.sendVerification(reqBody.email, verification_type)
       .catch(error => {
+        if (error === 'user not found')
+          throw new HttpException(error, HttpStatus.BAD_REQUEST)
         if (error === 'not initial user')
           throw new HttpException(error, HttpStatus.BAD_REQUEST)
         if (error === 'request later')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
+          throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
       })
   }
 
   // 透過 email 驗證碼啟用帳號
   @Put('users/enable')
-  @UseGuards(JwtAuthGuard)
-  async enableUser(@Req() req, @Body() body) {
-    let { verification_code } = body
+  async enableUser(@Req() req, @Body() body: { verification_code, email }) {
+    let { verification_code, email } = body
 
-    return this.userService.enableUser(req.payload.user_id, verification_code)
+    return this.userService.enableUser(email, verification_code)
       .catch(error => {
-        if (error === 'code expired')
+        if (error === 'user not found')
           throw new HttpException(error, HttpStatus.BAD_REQUEST)
+        if (error === 'code expired')
+          throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
         if (error === 'wrong verification code')
           throw new HttpException(error, HttpStatus.BAD_REQUEST)
       })

@@ -25,10 +25,14 @@ export class AuthController {
     let user = await this.usersService.findUserWithPwd({ email })
     if (!user)
       throw new HttpException('email not fund', HttpStatus.BAD_REQUEST)
+    if (user.user_status === 'DISABLED')
+      throw new HttpException('user is disabled', HttpStatus.FORBIDDEN)
 
     let isLoginSucess = await bcrypt.compare(password, user.password).catch(() => false)
     if (!isLoginSucess)
-      throw new HttpException('password wrong', HttpStatus.FORBIDDEN)
+      throw new HttpException('password wrong', HttpStatus.UNAUTHORIZED)
+    if (user.user_status === 'INITIAL')
+      throw new HttpException('initial user should enable account before login', HttpStatus.NOT_ACCEPTABLE)
 
     let accessToken = this.authService.signAccessToken(user)
     res.append('Authorization', `Bearer ${accessToken}`)
