@@ -45,6 +45,7 @@ export class UserController {
           throw new HttpException(error, HttpStatus.BAD_REQUEST)
         if (error === 'request later')
           throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
+        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
       })
   }
 
@@ -61,6 +62,7 @@ export class UserController {
           throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
         if (error === 'wrong verification code')
           throw new HttpException(error, HttpStatus.BAD_REQUEST)
+        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
       })
   }
 
