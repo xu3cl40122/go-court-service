@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  Column, ManyToOne, Check
+  Column, ManyToOne, Check, JoinColumn
 } from "typeorm";
 import { Game } from './game.entity'
 
@@ -11,8 +11,12 @@ export class GameStock {
   @PrimaryGeneratedColumn("uuid")
   game_stock_id: string;
 
+  @Column("uuid")
+  game_id: string;
+
   @ManyToOne(() => Game, game => game.game_id)
-  game_id: string
+  @JoinColumn({ name: 'game_id' })
+  game_detail: string
 
   @Column({
     type: "varchar",

@@ -132,13 +132,16 @@ export class GamesService {
     let resArr = []
     await getManager().transaction(async manager => {
       for (let cartItem of carts) {
-        let { game_id, game_stock_id, stock_amount, owner_user_id } = cartItem
-        await manager.createQueryBuilder()
+        let { game_stock_id, stock_amount, owner_user_id } = cartItem
+        let { raw, affected } = await manager.createQueryBuilder()
           .update(GameStock)
           .set({ stock_amount: () => `stock_amount - ${stock_amount}` })
           .where("game_stock_id = :game_stock_id", { game_stock_id })
+          .returning('*')
           .execute()
+        if (affected !== 1) throw 'wrong stock_id'
 
+        let { game_id } = raw[0]
         let gameTicketArr = Array(stock_amount).fill('').map(d => {
           return new GameTicket({ game_id, game_stock_id, owner_user_id })
         })

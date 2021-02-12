@@ -39,7 +39,7 @@ export class Game {
   @JoinColumn({ name: 'court_id' })
   court_detail: string;
 
-  @OneToMany(() => GameStock, gameStock => gameStock.game_id)
+  @OneToMany(() => GameStock, gameStock => gameStock.game_detail)
   game_stock: GameStock[]
 
   @Column({
