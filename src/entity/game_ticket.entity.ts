@@ -6,7 +6,7 @@ import { User } from './user.entity'
 import { Game } from './game.entity'
 import { GameStock } from './game_stock.entity'
 
-export enum GameTicketStatus { PENDING, PAID }
+export enum GameTicketStatus { PENDING, VERIFIED }
 
 
 @Entity()
@@ -47,6 +47,12 @@ export class GameTicket {
     default: 'PENDING'
   })
   game_ticket_status: string;
+
+  @Column({
+    type: 'boolean',
+    default: false
+  })
+  isPaid: boolean
 
   @CreateDateColumn()
   created_at: Date;

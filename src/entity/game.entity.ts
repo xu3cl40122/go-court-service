@@ -8,6 +8,7 @@ import { GameStock } from './game_stock.entity'
 
 export enum CourtType { INDOOR, COVERED, OUTDOOR }
 export enum GameType { MALE_NET, FEMALE_NET_MIX, FEMAL_NET_PURE, BEACH }
+export enum GameStatus { PENDING, PLAYING, FINISHED }
 
 @Entity()
 export class Game {
@@ -85,6 +86,13 @@ export class Game {
     nullable: true,
   })
   description: string;
+
+  @Column({
+    type: "varchar",
+    enum: GameStatus,
+    default: 'PENDING'
+  })
+  game_status: string;
 
   @Column({
     type: "jsonb",

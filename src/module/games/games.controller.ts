@@ -58,6 +58,8 @@ export class GamesController {
   @UseGuards(JwtAuthGuard)
   async updateGameStock(@Req() req, @Param('game_id') game_id, @Body() stockArr): Promise<Object> {
     let game = await this.gamesService.findGame({ game_id })
+    if (!game)
+      throw new HttpException('game not found', HttpStatus.BAD_REQUEST)
     if (game.host_user_id !== req.payload.user_id)
       throw new HttpException('only admin or host user can update', HttpStatus.FORBIDDEN)
 
@@ -66,29 +68,76 @@ export class GamesController {
     return await this.gamesService.updateGameStock(stockArr);
   }
 
-  @Post('/:game_id/game_user')
-  @UseGuards(JwtAuthGuard)
-  async joinGameByTicket(@Req() req, @Param('game_id') game_id, @Body() body): Promise<Object> {
-    let game = await this.gamesService.findGame({ game_id })
-    if (!game)
-      throw new HttpException('game not found', HttpStatus.BAD_REQUEST)
-    if (game.host_user_id !== req.payload.user_id)
-      throw new HttpException('only admin or host user can create game user', HttpStatus.FORBIDDEN)
+  // @Post('/:game_id/game_user')
+  // @UseGuards(JwtAuthGuard)
+  // async joinGameByTicket(@Req() req, @Param('game_id') game_id, @Body() body): Promise<Object> {
+  //   let game = await this.gamesService.findGame({ game_id })
+  //   if (!game)
+  //     throw new HttpException('game not found', HttpStatus.BAD_REQUEST)
+  //   if (game.host_user_id !== req.payload.user_id)
+  //     throw new HttpException('only admin or host user can create game user', HttpStatus.FORBIDDEN)
 
-    let { game_ticket_id, game_user_id } = body
-    let gameTicket = await this.gamesService.findGameTicket({ game_ticket_id })
-    if (!gameTicket || gameTicket.game_id !== game_id)
-      throw new HttpException('wrong game ticket id', HttpStatus.BAD_REQUEST)
-    if (gameTicket.game_ticket_status === 'PAID')
-      throw new HttpException('this ticket was used', HttpStatus.BAD_REQUEST)
+  //   let { game_ticket_id, game_user_id } = body
+  //   let gameTicket = await this.gamesService.findGameTicket({ game_ticket_id })
+  //   if (!gameTicket || gameTicket.game_id !== game_id)
+  //     throw new HttpException('wrong game ticket id', HttpStatus.BAD_REQUEST)
+  //   if (gameTicket.game_ticket_status === 'PAID')
+  //     throw new HttpException('this ticket was used', HttpStatus.BAD_REQUEST)
 
-    return await this.gamesService.joinGameByTicket(game_user_id, game, gameTicket);
-  }
+  //   return await this.gamesService.joinGameByTicket(game_user_id, game, gameTicket);
+  // }
 
-  @Get('/:game_id/game_user')
+  @Get('/:game_id/game_users')
   @UseGuards(JwtAuthGuard)
   async queryGameUsers(@Param('game_id') game_id, @Query() query): Promise<Object> {
     return await this.gamesService.queryGameUsers(game_id, query);
+  }
+
+  @Get('/:game_id/tickets')
+  @UseGuards(JwtAuthGuard)
+  async queryGameTickets(@Param('game_id') game_id, @Query() query): Promise<Object> {
+    return await this.gamesService.queryGameTickets(game_id, query);
+  }
+
+  @Put('/:game_id/init')
+  @UseGuards(JwtAuthGuard)
+  async initGame(@Req() req, @Param('game_id') game_id) {
+    let game = await this.gamesService.findGame({ game_id })
+    if (!game)
+      throw new HttpException('wrong game_id', HttpStatus.BAD_REQUEST)
+    if (game.host_user_id !== req.payload.user_id)
+      throw new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN)
+    // if (game.game_status !== 'PENDING')
+    //   throw new HttpException('you can init game which game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE)
+    let tickets = await this.gamesService.getGameTickets(game_id, {})
+    let idMap = {}
+    let game_users = []
+    tickets.forEach(ticket => {
+      let { game_id, game_stock_id, game_ticket_id, owner_user_id } = ticket
+      if (!idMap[game_ticket_id])
+        game_users.push({ game_id, game_stock_id, game_ticket_id, game_user_id: owner_user_id })
+      idMap[game_ticket_id] = ticket
+    })
+
+    return await this.gamesService.initGame(game_id, game_users)
+      .catch(error => {
+        console.log(error)
+        throw new HttpException('init game failed', HttpStatus.INTERNAL_SERVER_ERROR)
+      })
+  }
+
+  @Put('/:game_id/tickets/:game_ticket_id/verify')
+  @UseGuards(JwtAuthGuard)
+  async verifyTicket(@Req() req, @Param('game_id') game_id, @Param('game_ticket_id') game_ticket_id) {
+    let [game, gameTicket] = await Promise.all([this.gamesService.findGame({ game_id }), this.gamesService.findGameTicket({ game_ticket_id })])
+    if (!game)
+      throw new HttpException('wrong game_id', HttpStatus.BAD_REQUEST)
+    if (game.host_user_id !== req.payload.user_id)
+      throw new HttpException('only admin or host user can verify ticket', HttpStatus.FORBIDDEN)
+    if (!gameTicket || game.game_id !== gameTicket.game_id)
+      throw new HttpException('wrong ticket', HttpStatus.BAD_REQUEST)
+
+    return await this.gamesService.verifyTicket(gameTicket.game_ticket_id)
   }
 
   @Post('/checkout')
@@ -107,6 +156,8 @@ export class GamesController {
 
     return { tickets }
   }
+
+
 
 
 }

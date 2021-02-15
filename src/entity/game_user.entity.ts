@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryColumn, CreateDateColumn, UpdateDateColumn,
-  Column, ManyToOne, OneToMany, OneToOne, JoinColumn
+  Column, ManyToOne, OneToMany, OneToOne, JoinColumn, PrimaryGeneratedColumn
 } from "typeorm";
 import { User } from './user.entity'
 import { Game } from './game.entity'
@@ -18,14 +18,10 @@ export class GameUser {
     this.game_user_id = game_user_id
   }
 
-  @PrimaryColumn()
-  @OneToOne(() => Game, game => game.game_id)
-  game_id: string
-
-  @Column("uuid")
+  @PrimaryColumn("uuid")
   game_ticket_id: string;
 
-  @OneToOne(() => GameTicket, GameTicket => GameTicket.game_ticket_id)
+  @OneToOne(() => GameTicket, gameTicket => gameTicket.game_ticket_id)
   @JoinColumn({ name: 'game_ticket_id' })
   game_ticket_detail: GameTicket;
 
@@ -35,6 +31,17 @@ export class GameUser {
   @ManyToOne(() => GameStock, gameStock => gameStock.game_stock_id)
   @JoinColumn({ name: 'game_stock_id' })
   game_stock_detail: GameStock;
+
+  @Column({
+    type: "uuid",
+    nullable: true
+  })
+  game_id: string;
+
+  // 不知道為何要 join game 就會報 foreignkey 的錯 猜測是跟 game ticket 都用到 game_id ??
+  // @ManyToOne(() => Game, game => game.game_id)
+  // @JoinColumn({ name: 'game_id' })
+  // game_detail: string
 
   @Column("uuid")
   game_user_id: string;

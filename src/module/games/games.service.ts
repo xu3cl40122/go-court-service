@@ -28,6 +28,11 @@ export class GamesService {
     @InjectRepository(GameTicket) private gameTicketsRepository: Repository<GameTicket>,
     @InjectRepository(GameStock) private gameStockRepository: Repository<GameStock>,
   ) { }
+  
+  // game part 
+  async findGame(queryObj: { game_id?: string }) {
+    return await this.gamesRepository.findOne(queryObj)
+  }
 
   async queryGames(reqQuery: IGameQueryParams): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
@@ -46,30 +51,6 @@ export class GamesService {
     })
 
     return { content, page, size, total }
-  }
-
-  async findGame(queryObj: { game_id?: string }) {
-    return await this.gamesRepository.findOne(queryObj)
-  }
-
-  async queryTicketsOfUserId(owner_user_id, reqQuery: IPageQuery): Promise<Object> {
-    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
-
-    let [content, total] = await this.gameTicketsRepository.findAndCount({
-      take: size,
-      skip: page * size,
-      relations: ['game_detail', 'game_stock_detail'],
-      where: [{ owner_user_id }],
-      order: {
-        created_at: 'DESC'
-      }
-    })
-
-    return { content, page, size, total }
-  }
-
-  async findGameTicket(queryObj: { game_ticket_id?: string }) {
-    return await this.gameTicketsRepository.findOne(queryObj)
   }
 
   async addGame(gameData: Game): Promise<Object> {
@@ -128,6 +109,8 @@ export class GamesService {
     return await this.gameStockRepository.save(stockArr)
   }
 
+
+  // ticket part
   async checkout(carts: IBuyGameTicketBody[]) {
     let resArr = []
     await getManager().transaction(async manager => {
@@ -153,6 +136,55 @@ export class GamesService {
     return resArr
   }
 
+  async findGameTicket(queryObj: { game_ticket_id?: string }) {
+    return await this.gameTicketsRepository.findOne(queryObj)
+  }
+
+  async queryTicketsOfUserId(owner_user_id, reqQuery: IPageQuery): Promise<Object> {
+    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
+
+    let [content, total] = await this.gameTicketsRepository.findAndCount({
+      take: size,
+      skip: page * size,
+      relations: ['game_detail', 'game_stock_detail'],
+      where: [{ owner_user_id }],
+      order: {
+        created_at: 'DESC'
+      }
+    })
+
+    return { content, page, size, total }
+  }
+
+  async getGameTickets(game_id, option: { relations?: string[] }) {
+    return await this.gameTicketsRepository.find({
+      where: [{ game_id }],
+      relations: option.relations,
+      order: {
+        created_at: "DESC"
+      }
+    })
+  }
+
+  async queryGameTickets(game_id, query: IPageQuery) {
+    let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
+    let [content, total] = await this.gameTicketsRepository.findAndCount({
+      where: [{ game_id }],
+      relations: ["game_stock_detail", 'owner_user_detail'],
+      take: size,
+      skip: page * size,
+      order: {
+        created_at: "DESC"
+      }
+    })
+
+    return { content, page, size, total }
+  }
+
+  async verifyTicket(gaem_ticket_id) {
+    return this.gameTicketsRepository.update(gaem_ticket_id, { game_ticket_status: 'VERIFIED'})
+  }
+
   async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
     let { game_stock_id, game_ticket_id } = gameTicket
     let { game_id } = game
@@ -169,6 +201,14 @@ export class GamesService {
 
   }
 
+  // game user part
+  async initGame(game_id: string, game_users: GameUser[]) {
+    return await getManager().transaction(async manager => {
+      await manager.insert(GameUser, game_users)
+      await manager.update(Game, game_id, { game_status: 'PLAYING' })
+    })
+  }
+
   async queryGameUsers(game_id, query: IPageQuery) {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let [content, total] = await this.gameUsersRepository.findAndCount({
@@ -183,5 +223,11 @@ export class GamesService {
 
     return { content, page, size, total }
   }
+
+  async addGameUsers(game_users: GameUser[]) {
+    return this.gameUsersRepository.insert(game_users)
+  }
+
+
 
 }
