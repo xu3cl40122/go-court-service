@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Column } from "typeorm";
-
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Column, OneToMany } from "typeorm";
+import { Game } from './game.entity'
 export enum CourtOpenStatus { FREE, CLOSE, PAID }
 
 @Entity()
@@ -70,7 +70,7 @@ export class Court {
     enum: CourtOpenStatus,
   })
   open_status: string;
-  
+
   @Column({
     type: 'geometry',
     nullable: true,
@@ -78,6 +78,9 @@ export class Court {
     srid: 4326
   })
   geometry: string;
+
+  @OneToMany(() => Game, game => game.court_detail)
+  games: Game[]
 
   @CreateDateColumn()
   created_at: Date;

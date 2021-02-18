@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { getManager } from "typeorm";
+import { Repository, getManager, In, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { Game } from '../../entity/game.entity';
 import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
@@ -11,13 +10,18 @@ import { IPageQuery } from '../../interface/index';
 interface IGameQueryParams extends IPageQuery {
   court_type?: string,
   game_type?: string,
+  city_code?: string,
+  dist_code?: string,
+  start?: string,
+  end?: string,
+
 }
 
 interface IBuyGameTicketBody {
   game_id: string,
   game_stock_id: string,
   owner_user_id: string,
-  stock_amount: number,
+  stock_amount: string,
 }
 
 @Injectable()
@@ -28,20 +32,46 @@ export class GamesService {
     @InjectRepository(GameTicket) private gameTicketsRepository: Repository<GameTicket>,
     @InjectRepository(GameStock) private gameStockRepository: Repository<GameStock>,
   ) { }
-  
+
   // game part 
   async findGame(queryObj: { game_id?: string }) {
     return await this.gamesRepository.findOne(queryObj)
   }
 
-  async queryGames(reqQuery: IGameQueryParams): Promise<Object> {
-    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
-    let where = {}
-    let filters = ['court_type', 'game_type']
-    filters.forEach(key => reqQuery[key] ? where[key] = reqQuery[key] : '')
+  async queryGames(query: IGameQueryParams): Promise<Object> {
+    let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
+    let { city_code, dist_code, court_type, game_type, start, end } = query
+    let nowIsoTime = new Date().toISOString()
+    let where: any = {
+      // sell_start_at: LessThanOrEqual(nowIsoTime),
+      // sell_end_at: MoreThanOrEqual(nowIsoTime),
+    }
+
+    if (court_type)
+      where.court_type = In(court_type.split(','))
+    if (game_type)
+      where.game_type = In(game_type.split(','))
+    if (start)
+      where.game_start_at = MoreThanOrEqual(start)
+    if (end)
+      where.game_end_at = LessThanOrEqual(end)
 
     let [content, total] = await this.gamesRepository.findAndCount({
-      where,
+      join: {
+        alias: "game",
+        leftJoinAndSelect: {
+          court: "game.court_detail",
+        }
+      },
+      where: qb => {
+        // filter game 自己
+        let sql = qb.where(where)
+        // Filter join 來的 table
+        if (city_code)
+          sql = sql.andWhere('city_code = :city_code', { city_code })
+        if (dist_code)
+          sql = sql.andWhere('dist_code = :dist_code', { dist_code })
+      },
       take: size,
       skip: page * size,
       relations: ["host_user_detail", "game_stock"],
@@ -182,7 +212,7 @@ export class GamesService {
   }
 
   async verifyTicket(gaem_ticket_id) {
-    return this.gameTicketsRepository.update(gaem_ticket_id, { game_ticket_status: 'VERIFIED'})
+    return this.gameTicketsRepository.update(gaem_ticket_id, { game_ticket_status: 'VERIFIED' })
   }
 
   async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
