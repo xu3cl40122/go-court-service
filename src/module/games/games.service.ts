@@ -34,8 +34,11 @@ export class GamesService {
   ) { }
 
   // game part 
-  async findGame(queryObj: { game_id?: string }) {
-    return await this.gamesRepository.findOne(queryObj)
+  async findGame(query: { game_id?: string }) {
+    return await this.gamesRepository.findOne({
+      where: query,
+      relations: ["host_user_detail", "game_stock", "court_detail"],
+    })
   }
 
   async queryGames(query: IGameQueryParams): Promise<Object> {
