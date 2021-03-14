@@ -30,6 +30,13 @@ export class GamesController {
     return await this.gamesService.queryTicketsOfUserId(req.payload.user_id, query);
   }
 
+  @Get('/host')
+  @UseGuards(JwtAuthGuard)
+  async findGamesOfHost(@Req() req, @Query() query): Promise<Object> {
+    let host_user_id = req.payload.user_id
+    return await this.gamesService.findGamesOfHost(host_user_id, query);
+  }
+
   @Get('/:game_id')
   async getGameById(@Param('game_id') game_id): Promise<Object> {
     return await this.gamesService.findGame({ game_id });

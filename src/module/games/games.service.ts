@@ -86,6 +86,19 @@ export class GamesService {
     return { content, page, size, total }
   }
 
+  async findGamesOfHost(host_user_id, query: { page?, size?}) {
+    let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
+    let [content, total] = await this.gamesRepository.findAndCount({
+      where: {
+        host_user_id,
+      },
+      take: size,
+      skip: page * size,
+      relations: ["host_user_detail", "game_stock", "court_detail"],
+    })
+    return { content, page, size, total }
+  }
+
   async addGame(gameData: Game): Promise<Object> {
     const game = new Game();
     let columns = [
