@@ -100,10 +100,22 @@ export class Game {
   })
   meta: object;
 
-  @Column("boolean")
+  @Column({
+    type: 'boolean',
+    default: false
+  })
   is_public: boolean;
 
-  @Column("boolean")
+  @Column({
+    type: 'boolean',
+    default: false
+  })
+  is_free: boolean;
+
+  @Column({
+    type: 'boolean',
+    default: false
+  })
   deleted: boolean;
 
   @CreateDateColumn()

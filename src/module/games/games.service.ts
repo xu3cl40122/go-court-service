@@ -179,7 +179,7 @@ export class GamesService {
     let [content, total] = await this.gameTicketsRepository.findAndCount({
       take: size,
       skip: page * size,
-      relations: ['game_detail', 'game_stock_detail'],
+      relations: ['game_detail', 'game_detail.court_detail', 'game_stock_detail'],
       where: [{ owner_user_id }],
       order: {
         created_at: 'DESC'

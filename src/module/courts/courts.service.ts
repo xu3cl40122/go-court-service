@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Court } from '../../entity/court.entity';
+import { ILike } from "typeorm";
 
 @Injectable()
 export class CourtService {
@@ -9,12 +10,11 @@ export class CourtService {
     @InjectRepository(Court) private courtsRepository: Repository<Court>,
   ) { }
 
-  async queryCourts(reqQuery: { page, size, city_code, dist_code }): Promise<Object> {
-    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
+  async queryCourts(query: { page, size, city_code, dist_code }): Promise<Object> {
+    let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let where = {}
     let filters = ['city_code', 'dist_code']
-    filters.forEach(key => reqQuery[key] ? where[key] = reqQuery[key] : '')
-
+    filters.forEach(key => query[key] ? where[key] = query[key] : '')
     let [content, total] = await this.courtsRepository.findAndCount({
       where,
       take: size,
@@ -25,6 +25,28 @@ export class CourtService {
     })
 
     return { content, page, size, total }
+  }
+
+  async findCourt(query: { court_id?: string }) {
+    return await this.courtsRepository.findOne({
+      where: query,
+    })
+  }
+
+  /**
+   * 待研究 like 好像不能和其他參數混用 
+   */
+  async searchCourt(query: { name }): Promise<Object> {
+    let option: any = {}
+    if (query.name)
+      option.name = ILike(`%${query.name}%`)
+    let courts = await this.courtsRepository.find(option)
+
+    // let courts = await this.courtsRepository.find({
+    //   name: ILike(`%${query.name}%`)
+    // })
+
+    return courts
   }
 
   async addCourt(courtData: Court): Promise<Object> {
