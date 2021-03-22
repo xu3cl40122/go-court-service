@@ -83,7 +83,8 @@ export class GamesService {
       }
     })
 
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async findGamesOfHost(host_user_id, query: { page?, size?}) {
@@ -96,7 +97,8 @@ export class GamesService {
       skip: page * size,
       relations: ["host_user_detail", "game_stock", "court_detail"],
     })
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async addGame(gameData: Game): Promise<Object> {
@@ -199,7 +201,8 @@ export class GamesService {
       }
     })
 
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async getGameTickets(game_id, option: { relations?: string[] }) {
@@ -224,7 +227,8 @@ export class GamesService {
       }
     })
 
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async verifyTicket(gaem_ticket_id) {
@@ -267,7 +271,8 @@ export class GamesService {
       }
     })
 
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async addGameUsers(game_users: GameUser[]) {

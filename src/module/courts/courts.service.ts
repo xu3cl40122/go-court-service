@@ -24,7 +24,8 @@ export class CourtService {
       }
     })
 
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async findCourt(query: { court_id?: string }) {

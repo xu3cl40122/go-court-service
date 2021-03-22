@@ -106,6 +106,12 @@ export class GamesController {
     return await this.gamesService.queryGameTickets(game_id, query);
   }
 
+  /**
+   * todo update 被用到的 game ticket 的 status
+   * @param req 
+   * @param game_id 
+   * @returns 
+   */
   @Put('/:game_id/init')
   @UseGuards(JwtAuthGuard)
   async initGame(@Req() req, @Param('game_id') game_id) {

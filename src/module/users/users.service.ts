@@ -105,7 +105,8 @@ export class UsersService {
       }
     })
 
-    return { content, page, size, total }
+    let totalPage = Math.ceil(total / size)
+    return { content, page, size, total, totalPage }
   }
 
   async findUser(query: { email?: string, user_id?: string }) {
