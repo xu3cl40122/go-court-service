@@ -1,5 +1,17 @@
-version: "2"
+version: "3.5"
 services:
+  nginx:
+    image: nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - main
+    networks:
+      - gc_network
+    ports:
+      - 80:80
   main:
     container_name: main
     build:
@@ -9,6 +21,10 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     networks:
+      - gc_network
+        # aliases:
+        #   - backend
+    depends_on: 
       - postgres
     ports:
       - 3000:3000
@@ -25,7 +41,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - postgres
+      - gc_network
     restart: unless-stopped
 
   pgadmin:
@@ -38,13 +54,13 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
-      - postgres
+      - gc_network
       - file_postgres
     restart: unless-stopped
 
 networks:
-  postgres:
-    driver: bridge
+  gc_network:
+    # driver: bridge
   file_postgres:
     external:
       name: file_postgres

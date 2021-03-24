@@ -11,6 +11,8 @@
 `docker exec -it mydb psql -U postgres -d your_database`
 - import csv to table 
 `\COPY court FROM '/var/lib/postgresql/data/court.csv' DELIMITER ',' CSV HEADER;`
+- ssh to ec2 
+`ssh -i {path of key} ubuntu@ec2-35-160-48-27.us-west-2.compute.amazonaws.com`
 
 
 ### db 
@@ -31,3 +33,4 @@ alter table game
 - gcp storage 權限
 - import csv to table 
 - winodws 要開 docker volume share 權限
+- ssh key 權限太公開 https://blog.csdn.net/joshua2011/article/details/90208741
