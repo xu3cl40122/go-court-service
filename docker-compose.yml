@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.8"
 services:
   nginx:
     image: nginx
@@ -9,7 +9,7 @@ services:
     depends_on:
       - main
     networks:
-      - gc_network
+      - backend
     ports:
       - 80:80
   main:
@@ -21,9 +21,8 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     networks:
-      - gc_network
-        # aliases:
-        #   - backend
+      - backend
+      - postgres_network
     depends_on: 
       - postgres
     ports:
@@ -41,7 +40,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - gc_network
+      - postgres_network
     restart: unless-stopped
 
   pgadmin:
@@ -54,12 +53,13 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
-      - gc_network
+      - postgres_network
       - file_postgres
     restart: unless-stopped
 
 networks:
-  gc_network:
+  postgres_network:
+  backend:
     # driver: bridge
   file_postgres:
     external:
