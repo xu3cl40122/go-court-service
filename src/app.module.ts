@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { CourtModule } from './module/courts/courts.module';
 import { GamesModule } from './module/games/games.module';
 import { MessageModule } from './module/message/message.module';
+import { FilesModule } from './module/files/files.module';
+import * as AWS from 'aws-sdk';
 
 @Module({
   imports: [
@@ -23,11 +25,14 @@ import { MessageModule } from './module/message/message.module';
     AuthModule,
     CourtModule,
     GamesModule,
-    MessageModule
+    MessageModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {
-  constructor(private connection: Connection) {}
+  constructor(private connection: Connection) {
+    AWS.config.loadFromPath('./aws.config.json');
+  }
 }

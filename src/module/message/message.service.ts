@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-const aws = require('aws-sdk')
+import * as AWS from 'aws-sdk';
 
 interface IMsgParams {
   ToAddresses: string[],
@@ -14,7 +14,7 @@ export class MessageService {
   async sendMessage(params: IMsgParams) {
     let { ToAddresses, template, args } = params
     // Provide the full path to your config.json file. 
-    aws.config.loadFromPath('./aws.config.json');
+    // AWS.config.loadFromPath('./aws.config.json');
 
     // Replace sender@example.com with your "From" address.
     // This address must be verified with Amazon SES.
@@ -29,7 +29,7 @@ export class MessageService {
     }
 
     // Create a new SES object. 
-    let ses = new aws.SES();
+    let ses = new AWS.SES();
 
     // Specify the parameters to pass to the API.
     let option = {
