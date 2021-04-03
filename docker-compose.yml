@@ -54,16 +54,16 @@ services:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
       - postgres_network
-      - file_postgres
+      # - file_postgres
     restart: unless-stopped
 
 networks:
   postgres_network:
   backend:
     # driver: bridge
-  file_postgres:
-    external:
-      name: file_postgres
+  # file_postgres:
+  #   external:
+  #     name: file_postgres
       
 volumes:
   postgres:
