@@ -6,4 +6,5 @@ tmp/
 temp/
 aws.config.json
 *.pem
+*.env
 
