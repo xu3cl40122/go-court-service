@@ -6,7 +6,7 @@ import { User } from './user.entity'
 import { Game } from './game.entity'
 import { GameStock } from './game_stock.entity'
 
-export enum GameTicketStatus { PENDING, VERIFIED }
+export enum GameTicketStatus { PENDING, PLAYING, VERIFIED }
 
 
 @Entity()

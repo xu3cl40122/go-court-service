@@ -46,8 +46,7 @@ export class GamesService {
     let { city_code, dist_code, court_type, game_type, start, end } = query
     let nowIsoTime = new Date().toISOString()
     let where: any = {
-      // sell_start_at: LessThanOrEqual(nowIsoTime),
-      // sell_end_at: MoreThanOrEqual(nowIsoTime),
+      is_public: true
     }
 
     if (court_type)
@@ -255,6 +254,14 @@ export class GamesService {
   async initGame(game_id: string, game_users: GameUser[]) {
     return await getManager().transaction(async manager => {
       await manager.insert(GameUser, game_users)
+      let ticket_ids = game_users.map(d => d.game_ticket_id)
+      await manager
+        .createQueryBuilder()
+        .update(GameTicket)
+        .set({ game_ticket_status: 'PLAYING' })
+        .where({ game_ticket_id: In(ticket_ids) })
+        .execute();
+
       await manager.update(Game, game_id, { game_status: 'PLAYING' })
     })
   }

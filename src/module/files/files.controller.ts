@@ -52,7 +52,6 @@ export class FilesController {
       throw new HttpException('file not found', HttpStatus.BAD_REQUEST)
     if (file.created_by !== req.payload.user_id)
       throw new HttpException('only admin or file owner can update', HttpStatus.FORBIDDEN)
-    console.log('header', req.headers)
 
     return await this.filesService.updateFileContent(file, fileContent);
   }

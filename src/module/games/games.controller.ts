@@ -127,9 +127,10 @@ export class GamesController {
     let game_users = []
     tickets.forEach(ticket => {
       let { game_id, game_stock_id, game_ticket_id, owner_user_id } = ticket
-      if (!idMap[game_ticket_id])
+      if (!idMap[owner_user_id]) {
         game_users.push({ game_id, game_stock_id, game_ticket_id, game_user_id: owner_user_id })
-      idMap[game_ticket_id] = ticket
+        idMap[owner_user_id] = ticket
+      }
     })
 
     return await this.gamesService.initGame(game_id, game_users)
