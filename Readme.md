@@ -12,7 +12,9 @@
 - import csv to table 
 `\COPY court FROM '/var/lib/postgresql/data/court.csv' DELIMITER ',' CSV HEADER;`
 - ssh to ec2 
-`ssh -i {path of key} ubuntu@ec2-35-160-48-27.us-west-2.compute.amazonaws.com`
+`ssh -i {path of key} ubuntu@ec2-34-219-47-37.us-west-2.compute.amazonaws.com`
+- run compose limit cpu 
+`docker-compose --compatibility up -d`
 
 
 ### db 
