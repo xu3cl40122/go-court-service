@@ -4,7 +4,7 @@ node_modules/
 build/
 tmp/
 temp/
-aws.config.json
 *.pem
-*.env
+# aws.config.json
+# *.env
 
