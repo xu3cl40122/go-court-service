@@ -4,8 +4,8 @@ services:
     image: nginx
     restart: unless-stopped
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/local/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/local/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - main
     networks:
