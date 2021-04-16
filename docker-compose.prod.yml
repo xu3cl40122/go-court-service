@@ -3,7 +3,7 @@ services:
   nginx:
     build:
       context: ./nginx
-      dockerfile: Dockerfile.nginx
+      dockerfile: Dockerfile.nginx.prod
     restart: unless-stopped
     depends_on:
       - main

@@ -25,14 +25,14 @@ export class GameTicket {
 
   @ManyToOne(() => Game, game => game.game_id)
   @JoinColumn({ name: 'game_id' })
-  game_detail: string
+  game_detail: Game
 
   @Column("uuid")
   game_stock_id: string;
 
   @ManyToOne(() => GameStock, game_stock => game_stock.game_stock_id)
   @JoinColumn({ name: 'game_stock_id' })
-  game_stock_detail: User;
+  game_stock_detail: GameStock;
 
   @Column("uuid")
   owner_user_id: string

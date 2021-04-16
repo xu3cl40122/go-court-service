@@ -184,7 +184,10 @@ export class GamesService {
   }
 
   async findGameTicket(queryObj: { game_ticket_id?: string }) {
-    return await this.gameTicketsRepository.findOne(queryObj)
+    return await this.gameTicketsRepository.findOne({
+      where: [{ game_ticket_id: queryObj.game_ticket_id }],
+      relations: ['game_stock_detail']
+    })
   }
 
   async queryTicketsOfUserId(owner_user_id, reqQuery: IPageQuery): Promise<Object> {

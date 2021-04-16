@@ -24,12 +24,24 @@ export class GamesController {
     return await this.gamesService.queryGames(query);
   }
 
+  // get 我有的票
   @Get('/tickets')
   @UseGuards(JwtAuthGuard)
   async getMyTickets(@Req() req, @Query() query): Promise<Object> {
     return await this.gamesService.queryTicketsOfUserId(req.payload.user_id, query);
   }
+  // get 票 by id
+  @Get('/tickets/:game_ticket_id')
+  @UseGuards(JwtAuthGuard)
+  async getTicketById(@Req() req, @Param('game_ticket_id') game_ticket_id): Promise<Object> {
+    let user_id = req.payload.user_id
+    let ticket = await this.gamesService.findGameTicket({ game_ticket_id });
+    if (ticket.owner_user_id !== user_id && ticket.game_detail.host_user_id)
+      throw new HttpException('only host of game or owner of ticket can access', HttpStatus.FORBIDDEN)
+    return ticket
+  }
 
+  // get 我主辦的比賽
   @Get('/host')
   @UseGuards(JwtAuthGuard)
   async findGamesOfHost(@Req() req, @Query() query): Promise<Object> {
@@ -60,7 +72,7 @@ export class GamesController {
     return await this.gamesService.updateGame(game_id, body);
   }
 
-
+  // update game 票券規格
   @Put('/:game_id/stock')
   @UseGuards(JwtAuthGuard)
   async updateGameStock(@Req() req, @Param('game_id') game_id, @Body() stockArr): Promise<Object> {
@@ -140,6 +152,7 @@ export class GamesController {
       })
   }
 
+  // 驗證票券
   @Put('/:game_id/tickets/:game_ticket_id/verify')
   @UseGuards(JwtAuthGuard)
   async verifyTicket(@Req() req, @Param('game_id') game_id, @Param('game_ticket_id') game_ticket_id) {
@@ -154,6 +167,7 @@ export class GamesController {
     return await this.gamesService.verifyTicket(gameTicket.game_ticket_id)
   }
 
+  // 結帳票券
   @Post('/checkout')
   @UseGuards(JwtAuthGuard)
   async checkout(@Req() req, @Body() carts) {
@@ -170,8 +184,6 @@ export class GamesController {
 
     return { tickets }
   }
-
-
 
 
 }
