@@ -186,7 +186,7 @@ export class GamesService {
   async findGameTicket(queryObj: { game_ticket_id?: string }) {
     return await this.gameTicketsRepository.findOne({
       where: [{ game_ticket_id: queryObj.game_ticket_id }],
-      relations: ['game_stock_detail']
+      relations: ['game_stock_detail', 'owner_user_detail']
     })
   }
 

@@ -15,6 +15,8 @@
 `ssh -i {path of key} ubuntu@ec2-34-219-47-37.us-west-2.compute.amazonaws.com`
 - run compose limit cpu 
 `docker-compose --compatibility up -d`
+- move file to ec2
+`scp -i {path of key} -r {file path}  ec2-user@ec2-52-11-194-84.us-west-2.compute.amazonaws.com:{target path}`
 
 
 ### db 
@@ -36,3 +38,4 @@ alter table game
 - import csv to table 
 - winodws 要開 docker volume share 權限
 - ssh key 權限太公開 https://blog.csdn.net/joshua2011/article/details/90208741
+- nginx lets encrypt
