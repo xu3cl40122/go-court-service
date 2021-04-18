@@ -89,6 +89,12 @@ export class Game {
 
   @Column({
     type: "varchar",
+    nullable: true,
+  })
+  logo_url: string;
+
+  @Column({
+    type: "varchar",
     enum: GameStatus,
     default: 'PENDING'
   })

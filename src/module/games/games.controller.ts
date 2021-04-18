@@ -13,11 +13,14 @@ import {
   Req,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
+import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 
 @Controller('games')
 export class GamesController {
-  constructor(private readonly gamesService: GamesService) { }
+  constructor(
+    private readonly gamesService: GamesService,
+    private readonly usersService: UsersService) { }
 
   @Get()
   async queryGames(@Query() query): Promise<Object> {
@@ -30,6 +33,28 @@ export class GamesController {
   async getMyTickets(@Req() req, @Query() query): Promise<Object> {
     return await this.gamesService.queryTicketsOfUserId(req.payload.user_id, query);
   }
+
+  // 轉送票券
+  @Put('/tickets/:game_ticket_id/transfer')
+  @UseGuards(JwtAuthGuard)
+  async transferTicket(@Req() req, @Param('game_ticket_id') game_ticket_id, @Body() body) {
+    let sender_id = req.payload.user_id
+    let receiver_id = body.receiver_id
+
+    let [user, ticket] = await Promise.all([this.usersService.findUser({ user_id: receiver_id }), this.gamesService.findGameTicket({ game_ticket_id })])
+    if (!ticket)
+      throw new HttpException('ticket not found', HttpStatus.BAD_REQUEST)
+    if (!user)
+      throw new HttpException('receiver not found', HttpStatus.BAD_REQUEST)
+    if (ticket.owner_user_id !== sender_id)
+      throw new HttpException('only owner of ticket can access', HttpStatus.FORBIDDEN)
+    if (ticket.game_ticket_status !== 'PENDING')
+      throw new HttpException("can't transfer ticket which ticket status isn't PENDING", HttpStatus.BAD_REQUEST)
+
+
+    return await this.gamesService.transferTicket(game_ticket_id, sender_id, receiver_id, ticket.meta)
+  }
+
   // get 票 by id
   @Get('/tickets/:game_ticket_id')
   @UseGuards(JwtAuthGuard)
@@ -38,7 +63,7 @@ export class GamesController {
     let ticket = await this.gamesService.findGameTicket({ game_ticket_id });
     if (!ticket)
       throw new HttpException('ticket not found', HttpStatus.BAD_REQUEST)
-    if (ticket.owner_user_id !== user_id && ticket.game_detail.host_user_id)
+    if (ticket.owner_user_id !== user_id && ticket.game_detail.host_user_id !== user_id)
       throw new HttpException('only host of game or owner of ticket can access', HttpStatus.FORBIDDEN)
     return ticket
   }
@@ -89,24 +114,18 @@ export class GamesController {
     return await this.gamesService.updateGameStock(stockArr);
   }
 
-  // @Post('/:game_id/game_user')
-  // @UseGuards(JwtAuthGuard)
-  // async joinGameByTicket(@Req() req, @Param('game_id') game_id, @Body() body): Promise<Object> {
-  //   let game = await this.gamesService.findGame({ game_id })
-  //   if (!game)
-  //     throw new HttpException('game not found', HttpStatus.BAD_REQUEST)
-  //   if (game.host_user_id !== req.payload.user_id)
-  //     throw new HttpException('only admin or host user can create game user', HttpStatus.FORBIDDEN)
+  // update game sstatus to FINISHED
+  @Put('/:game_id/close')
+  @UseGuards(JwtAuthGuard)
+  async closeGame(@Req() req, @Param('game_id') game_id): Promise<Object> {
+    let game = await this.gamesService.findGame({ game_id })
+    if (!game)
+      throw new HttpException('game not found', HttpStatus.BAD_REQUEST)
+    if (game.host_user_id !== req.payload.user_id)
+      throw new HttpException('only admin or host user can close game', HttpStatus.FORBIDDEN)
 
-  //   let { game_ticket_id, game_user_id } = body
-  //   let gameTicket = await this.gamesService.findGameTicket({ game_ticket_id })
-  //   if (!gameTicket || gameTicket.game_id !== game_id)
-  //     throw new HttpException('wrong game ticket id', HttpStatus.BAD_REQUEST)
-  //   if (gameTicket.game_ticket_status === 'PAID')
-  //     throw new HttpException('this ticket was used', HttpStatus.BAD_REQUEST)
-
-  //   return await this.gamesService.joinGameByTicket(game_user_id, game, gameTicket);
-  // }
+    return await this.gamesService.closeGame(game_id);
+  }
 
   @Get('/:game_id/game_users')
   @UseGuards(JwtAuthGuard)

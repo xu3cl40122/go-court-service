@@ -148,7 +148,6 @@ export class GamesService {
       .returning('*')
       .execute();
 
-    raw.forEach(user => delete user.email)
     return raw?.[0]
   }
 
@@ -156,6 +155,9 @@ export class GamesService {
     return await this.gameStockRepository.save(stockArr)
   }
 
+  async closeGame(game_id: string) {
+    return this.gamesRepository.update(game_id, { game_status: 'FINISHED' })
+  }
 
   // ticket part
   async checkout(carts: IBuyGameTicketBody[]) {
@@ -233,25 +235,31 @@ export class GamesService {
     return { content, page, size, total, totalPage }
   }
 
-  async verifyTicket(gaem_ticket_id) {
-    return this.gameTicketsRepository.update(gaem_ticket_id, { game_ticket_status: 'VERIFIED' })
+  async verifyTicket(game_ticket_id) {
+    return this.gameTicketsRepository.update(game_ticket_id, { game_ticket_status: 'VERIFIED' })
   }
 
-  async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
-    let { game_stock_id, game_ticket_id } = gameTicket
-    let { game_id } = game
-    return await getManager().transaction(async manager => {
-      await manager.createQueryBuilder()
-        .update(GameTicket)
-        .set({ game_ticket_status: 'PAID' })
-        .where("game_ticket_id = :game_ticket_id", { game_ticket_id })
-        .execute()
-
-      let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id })
-      return await manager.save(gameUser)
-    })
-
+  async transferTicket(game_ticket_id: string, sender_id: string, receiver_id: string, meta: any = {}) {
+    if (!meta.transfer_record) meta.transfer_record = []
+    meta.transfer_record.push({ from: sender_id, to: receiver_id, updated_at: new Date().getTime() })
+    return this.gameTicketsRepository.update(game_ticket_id, { owner_user_id: receiver_id, meta })
   }
+
+  // async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
+  //   let { game_stock_id, game_ticket_id } = gameTicket
+  //   let { game_id } = game
+  //   return await getManager().transaction(async manager => {
+  //     await manager.createQueryBuilder()
+  //       .update(GameTicket)
+  //       .set({ game_ticket_status: 'PAID' })
+  //       .where("game_ticket_id = :game_ticket_id", { game_ticket_id })
+  //       .execute()
+
+  //     let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id })
+  //     return await manager.save(gameUser)
+  //   })
+
+  // }
 
   // game user part
   async initGame(game_id: string, game_users: GameUser[]) {

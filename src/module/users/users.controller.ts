@@ -23,6 +23,20 @@ export class UserController {
     private readonly messageService: MessageService
   ) { }
 
+  // admin create user (省略驗證 email)
+  @Post('admin/users')
+  @UseGuards(JwtAuthGuard)
+  async adminAddUser(@Req() req, @Body() reqBody) {
+    if (req.payload.user_role !== 'ADMIN')
+      throw new HttpException('permission denied', HttpStatus.FORBIDDEN)
+    return this.userService.addUser(reqBody, 'ENABLED')
+      .catch(error => {
+        if (error.code === '23505')
+          throw new HttpException('duplicate email', HttpStatus.BAD_REQUEST)
+        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
+      })
+  }
+
   @Post('register')
   async register(@Body() reqBody) {
     return this.userService.addUser(reqBody)

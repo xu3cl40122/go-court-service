@@ -9,10 +9,10 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService
-    ) { }
+  ) { }
 
   signAccessToken(user: User) {
-    const payload = { email: user.email, user_id: user.user_id };
+    const payload = { email: user.email, user_id: user.user_id, user_role: user.user_role };
     return this.jwtService.sign(payload)
   }
 

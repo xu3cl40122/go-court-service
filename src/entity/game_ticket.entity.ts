@@ -54,6 +54,12 @@ export class GameTicket {
   })
   isPaid: boolean
 
+  @Column({
+    type: "jsonb",
+    default: {}
+  })
+  meta: object;
+
   @CreateDateColumn()
   created_at: Date;
 

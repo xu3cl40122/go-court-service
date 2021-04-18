@@ -7,7 +7,6 @@ import { generateVerificationCode } from '../../methods/'
 import { MessageService } from '../message/message.service'
 import * as dayjs from 'dayjs'
 import * as bcrypt from 'bcrypt'
-import { isRgbColor } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -17,16 +16,18 @@ export class UsersService {
     private messageService: MessageService
   ) { }
 
-  async addUser(userData: User): Promise<Object> {
+  async addUser(userData: User, user_status = 'INITIAL'): Promise<Object> {
     const user = new User();
     let columns = [
       'profile_name',
       'email',
+      'phone',
     ]
     columns.forEach(key => user[key] = userData[key])
     let saltRound = 10
     let hashedPwd = await bcrypt.hash(userData.password, saltRound)
     user.password = hashedPwd
+    user.user_status = user_status
     return await this.usersRepository.save(user);
   }
 
@@ -34,7 +35,7 @@ export class UsersService {
     let user = await this.findUser({ email })
     if (!user) throw 'user not found'
     if (user.user_status !== 'INITIAL') throw 'not initial user'
-    
+
     let { user_id } = user
     let lastVerification = await this.findVerification({ user_id })
     if (lastVerification && !dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
