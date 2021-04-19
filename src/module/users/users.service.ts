@@ -22,6 +22,10 @@ export class UsersService {
       'profile_name',
       'email',
       'phone',
+      'gender',
+      'avatar_url',
+      'description',
+      'meta',
     ]
     columns.forEach(key => user[key] = userData[key])
     let saltRound = 10
@@ -81,7 +85,13 @@ export class UsersService {
   async editUser(user_id: string, userData: User): Promise<any> {
     let columns = [
       'profile_name',
+      'phone',
+      'gender',
+      'avatar_url',
+      'description',
+      'meta',
     ]
+    userData.meta = userData.meta ?? {}
     let changedPart = {}
     columns.forEach(key => changedPart[key] = userData[key])
     let { raw } = await this.usersRepository
@@ -95,6 +105,10 @@ export class UsersService {
     raw.forEach(user => delete user.email)
     return raw?.[0]
   }
+
+  // async editUser(user_id: string, userData: User) {
+  //   let user = await this.findUser({user_id})
+  // }
 
   async queryUsers(reqQuery: { page, size }): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]

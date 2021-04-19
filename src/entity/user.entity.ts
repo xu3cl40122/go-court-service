@@ -24,6 +24,13 @@ export class User {
 
 	@Column({
 		type: "varchar",
+		length: 50,
+		nullable: true
+	})
+	gender: string;
+
+	@Column({
+		type: "varchar",
 		length: 150,
 		nullable: true
 	})
@@ -31,15 +38,8 @@ export class User {
 
 	@Column({
 		type: "varchar",
-		nullable: true
-	})
-	avatar_url: string;
-
-	@Column({
-		type: "varchar",
 		length: 150,
 		select: false,
-		nullable: true
 	})
 	password: string;
 
@@ -58,6 +58,24 @@ export class User {
 		length: 50,
 	})
 	user_role: string;
+
+	@Column({
+		type: "varchar",
+		nullable: true
+	})
+	avatar_url: string;
+
+	@Column({
+		type: "varchar",
+		nullable: true
+	})
+	description: string;
+
+	@Column({
+		type: "jsonb",
+		default: {}
+	})
+	meta: object;
 
 	@CreateDateColumn()
 	created_at: Date;

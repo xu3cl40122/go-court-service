@@ -89,10 +89,10 @@ export class UserController {
   @Put('profile')
   @UseGuards(JwtAuthGuard)
   async updateSelfProfile(@Req() req, @Body() userData): Promise<Object> {
-    let { raw, affected } = await this.userService.editUser(req.payload.user_id, userData);
-    if (affected === 0 || !raw?.[0])
+    let res = await this.userService.editUser(req.payload.user_id, userData);
+    if (!res)
       throw new HttpException('user_id not found', HttpStatus.BAD_REQUEST)
-    return raw[0]
+    return res
   }
 
   @Get('users')
