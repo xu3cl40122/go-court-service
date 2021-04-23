@@ -63,12 +63,6 @@ export class User {
 		type: "varchar",
 		nullable: true
 	})
-	avatar_url: string;
-
-	@Column({
-		type: "varchar",
-		nullable: true
-	})
 	description: string;
 
 	@Column({

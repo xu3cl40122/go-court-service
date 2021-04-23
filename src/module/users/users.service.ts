@@ -93,7 +93,7 @@ export class UsersService {
     ]
     userData.meta = userData.meta ?? {}
     let changedPart = {}
-    columns.forEach(key => changedPart[key] = userData[key])
+    columns.forEach(key => userData[key] ? changedPart[key] = userData[key] : null)
     let { raw } = await this.usersRepository
       .createQueryBuilder()
       .update(User)
@@ -102,7 +102,7 @@ export class UsersService {
       .returning('*')
       .execute();
 
-    raw.forEach(user => delete user.email)
+    raw.forEach(user => delete user.password)
     return raw?.[0]
   }
 

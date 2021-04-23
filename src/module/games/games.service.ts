@@ -137,6 +137,7 @@ export class GamesService {
       'description',
       'is_public',
       'deleted',
+      'meta',
     ]
 
     columns.forEach(key => game[key] = gameData[key])
