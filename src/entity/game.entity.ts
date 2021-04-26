@@ -102,13 +102,11 @@ export class Game {
 
   @Column({
     type: 'boolean',
-    default: false
   })
   is_public: boolean;
 
   @Column({
     type: 'boolean',
-    default: false
   })
   is_free: boolean;
 

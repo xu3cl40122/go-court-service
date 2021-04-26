@@ -153,8 +153,21 @@ export class GamesController {
       throw new HttpException('wrong game_id', HttpStatus.BAD_REQUEST)
     if (game.host_user_id !== req.payload.user_id)
       throw new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN)
-    // if (game.game_status !== 'PENDING')
-    //   throw new HttpException('you can init game which game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE)
+    if (game.game_status !== 'PENDING')
+      throw new HttpException('you can init game which game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE)
+
+    return await this.gamesService.initGame(game_id)
+  }
+
+  @Put('/:game_id/initGameUsers')
+  @UseGuards(JwtAuthGuard)
+  async initGameUser(@Req() req, @Param('game_id') game_id) {
+    let game = await this.gamesService.findGame({ game_id })
+    if (!game)
+      throw new HttpException('wrong game_id', HttpStatus.BAD_REQUEST)
+    if (game.host_user_id !== req.payload.user_id)
+      throw new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN)
+   
     let tickets = await this.gamesService.getGameTickets(game_id, {})
     let idMap = {}
     let game_users = []
@@ -166,7 +179,7 @@ export class GamesController {
       }
     })
 
-    return await this.gamesService.initGame(game_id, game_users)
+    return await this.gamesService.initGameUsers(game_id, game_users)
       .catch(error => {
         console.log(error)
         throw new HttpException('init game failed', HttpStatus.INTERNAL_SERVER_ERROR)
@@ -185,7 +198,7 @@ export class GamesController {
     if (!gameTicket || game.game_id !== gameTicket.game_id)
       throw new HttpException('wrong ticket', HttpStatus.BAD_REQUEST)
 
-    return await this.gamesService.verifyTicket(gameTicket.game_ticket_id)
+    return await this.gamesService.verifyTicket(gameTicket)
   }
 
   // 結帳票券

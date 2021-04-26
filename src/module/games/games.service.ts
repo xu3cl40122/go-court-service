@@ -140,7 +140,7 @@ export class GamesService {
       'meta',
     ]
 
-    columns.forEach(key => game[key] = gameData[key])
+    columns.forEach(key => gameData[key] != undefined ? game[key] = gameData[key] : null)
     let { raw } = await this.gamesRepository
       .createQueryBuilder()
       .update(Game)
@@ -158,6 +158,10 @@ export class GamesService {
 
   async closeGame(game_id: string) {
     return this.gamesRepository.update(game_id, { game_status: 'FINISHED' })
+  }
+  
+  async initGame(game_id: string) {
+    return this.gamesRepository.update(game_id, { game_status: 'PLAYING' })
   }
 
   // ticket part
@@ -236,8 +240,20 @@ export class GamesService {
     return { content, page, size, total, totalPage }
   }
 
-  async verifyTicket(game_ticket_id) {
-    return this.gameTicketsRepository.update(game_ticket_id, { game_ticket_status: 'VERIFIED' })
+  async verifyTicket(gameTicket: GameTicket) {
+    let { game_ticket_id, game_stock_id, game_id, owner_user_id} = gameTicket
+    let oldGameUser = await this.findGameUser({ game_ticket_id})
+    return await getManager().transaction(async manager => {
+      await manager.createQueryBuilder()
+        .update(GameTicket)
+        .set({ game_ticket_status: 'VERIFIED' })
+        .where("game_ticket_id = :game_ticket_id", { game_ticket_id })
+        .execute()
+      if (oldGameUser) return
+      let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id: owner_user_id })
+      return await manager.save(gameUser)
+    })
+    // return this.gameTicketsRepository.update(game_ticket_id, { game_ticket_status: 'VERIFIED' })
   }
 
   async transferTicket(game_ticket_id: string, sender_id: string, receiver_id: string, meta: any = {}) {
@@ -246,24 +262,24 @@ export class GamesService {
     return this.gameTicketsRepository.update(game_ticket_id, { owner_user_id: receiver_id, meta })
   }
 
-  // async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
-  //   let { game_stock_id, game_ticket_id } = gameTicket
-  //   let { game_id } = game
-  //   return await getManager().transaction(async manager => {
-  //     await manager.createQueryBuilder()
-  //       .update(GameTicket)
-  //       .set({ game_ticket_status: 'PAID' })
-  //       .where("game_ticket_id = :game_ticket_id", { game_ticket_id })
-  //       .execute()
+  async joinGameByTicket(game_user_id, game: Game, gameTicket: GameTicket): Promise<Object> {
+    let { game_stock_id, game_ticket_id } = gameTicket
+    let { game_id } = game
+    return await getManager().transaction(async manager => {
+      await manager.createQueryBuilder()
+        .update(GameTicket)
+        .set({ game_ticket_status: 'PAID' })
+        .where("game_ticket_id = :game_ticket_id", { game_ticket_id })
+        .execute()
 
-  //     let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id })
-  //     return await manager.save(gameUser)
-  //   })
+      let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id })
+      return await manager.save(gameUser)
+    })
 
-  // }
+  }
 
   // game user part
-  async initGame(game_id: string, game_users: GameUser[]) {
+  async initGameUsers(game_id: string, game_users: GameUser[]) {
     return await getManager().transaction(async manager => {
       await manager.insert(GameUser, game_users)
       let ticket_ids = game_users.map(d => d.game_ticket_id)
@@ -292,6 +308,18 @@ export class GamesService {
 
     let totalPage = Math.ceil(total / size)
     return { content, page, size, total, totalPage }
+  }
+
+  async findGameUser(queryObj: { game_user_id?: string, game_ticket_id }) {
+    let where:any = {}
+    if (queryObj.game_user_id)
+      where.game_user_id = queryObj.game_user_id
+    if (queryObj.game_ticket_id)
+      where.game_ticket_id = queryObj.game_ticket_id
+    return await this.gameUsersRepository.findOne({
+      where: where,
+      relations: ['game_user_detail', 'game_ticket_detail']
+    })
   }
 
   async addGameUsers(game_users: GameUser[]) {

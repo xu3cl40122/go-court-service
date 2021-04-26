@@ -93,7 +93,7 @@ export class UsersService {
     ]
     userData.meta = userData.meta ?? {}
     let changedPart = {}
-    columns.forEach(key => userData[key] ? changedPart[key] = userData[key] : null)
+    columns.forEach(key => userData[key] != null ? changedPart[key] = userData[key] : null)
     let { raw } = await this.usersRepository
       .createQueryBuilder()
       .update(User)
