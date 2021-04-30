@@ -107,11 +107,6 @@ export class Game {
 
   @Column({
     type: 'boolean',
-  })
-  is_free: boolean;
-
-  @Column({
-    type: 'boolean',
     default: false
   })
   deleted: boolean;

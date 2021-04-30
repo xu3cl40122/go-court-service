@@ -44,9 +44,9 @@ export class GamesService {
   async queryGames(query: IGameQueryParams): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let { city_code, dist_code, court_type, game_type, start, end } = query
-    let nowIsoTime = new Date().toISOString()
     let where: any = {
-      is_public: true
+      is_public: true,
+      sell_start_at: LessThanOrEqual(new Date()),
     }
 
     if (court_type)
@@ -116,6 +116,7 @@ export class GamesService {
       'description',
       'is_public',
       'deleted',
+      'meta',
     ]
     columns.forEach(key => game[key] = gameData[key])
     return await this.gamesRepository.save(game);

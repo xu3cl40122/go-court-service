@@ -6,7 +6,7 @@ import { Game } from './game.entity'
 
 
 @Entity()
-@Check(`"stock_amount" > 0`)
+@Check(`"stock_amount" >= 0`)
 export class GameStock {
   @PrimaryGeneratedColumn("uuid")
   game_stock_id: string;
