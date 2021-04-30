@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile.nginx.prod
     restart: unless-stopped
     volumes:
-      - ./frontend:/frontend
+      - ./frontend/:/frontend/
     depends_on:
       - main
     networks:
