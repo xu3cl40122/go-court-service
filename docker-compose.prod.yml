@@ -5,6 +5,8 @@ services:
       context: ./nginx
       dockerfile: Dockerfile.nginx.prod
     restart: unless-stopped
+    volumes:
+      - ./frontend:/frontend
     depends_on:
       - main
     networks:
@@ -15,6 +17,7 @@ services:
   main:
     container_name: main
     image: xu3cl40122/gc-service:latest
+    # 可能因為 ec2 memory 太小 build 都失敗 改成先在 local build image 傳到 docker hub
     # build:
     #   context: .
     #   dockerfile: Dockerfile.prod
