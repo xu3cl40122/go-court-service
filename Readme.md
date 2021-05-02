@@ -11,12 +11,16 @@
 `docker exec -it mydb psql -U postgres -d your_database`
 - import csv to table 
 `\COPY court FROM '/var/lib/postgresql/data/court.csv' DELIMITER ',' CSV HEADER;`
+- set postgis column 
+`ALTER TABLE your_table ADD COLUMN geom geometry(Point, 4326);`
+`UPDATE your_table SET geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326);`
 - ssh to ec2 
 `ssh -i {path of key} ubuntu@ec2-34-219-47-37.us-west-2.compute.amazonaws.com`
 - run compose limit cpu 
 `docker-compose --compatibility up -d`
 - move file to ec2
 `scp -i {path of key} -r {file path}  ec2-user@ec2-52-11-194-84.us-west-2.compute.amazonaws.com:{target path}`
+
 
 
 ### db 

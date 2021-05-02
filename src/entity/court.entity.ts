@@ -5,8 +5,8 @@ export enum CourtOpenStatus { FREE, CLOSE, PAID }
 @Entity()
 export class Court {
 
-  @PrimaryGeneratedColumn("uuid")
-  court_id: string;
+  @PrimaryGeneratedColumn()
+  court_id: number;
 
   @Column({
     type: "varchar",

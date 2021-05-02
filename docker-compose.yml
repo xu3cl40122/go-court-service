@@ -39,7 +39,8 @@ services:
 
   postgres:
     container_name: postgres_container
-    image: kartoza/postgis
+    # image: kartoza/postgis
+    image: mdillon/postgis
     env_file:
       - db.env
     volumes:

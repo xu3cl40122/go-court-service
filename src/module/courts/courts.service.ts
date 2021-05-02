@@ -12,15 +12,22 @@ export class CourtService {
 
   async queryCourts(query: { page, size, city_code, dist_code, name }): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
-    let where:any = {}
-    let filters = ['city_code', 'dist_code']
-    filters.forEach(key => query[key] ? where[key] = query[key] : '')
+    let { city_code, dist_code, name } = query
+    let where: any = {}
+  
+    if (city_code)
+      where.city_code = city_code
+    if (dist_code)
+      where.dist_code = dist_code
+    if (name)
+      where.name = ILike(`%${name}%`)
+
     let [content, total] = await this.courtsRepository.findAndCount({
       where,
       take: size,
       skip: page * size,
       order: {
-        created_at: "DESC"
+        // created_at: "DESC"
       }
     })
 
@@ -32,22 +39,6 @@ export class CourtService {
     return await this.courtsRepository.findOne({
       where: query,
     })
-  }
-
-  /**
-   * 待研究 like 好像不能和其他參數混用 
-   */
-  async searchCourt(query: { name }): Promise<Object> {
-    let option: any = {}
-    if (query.name)
-      option.name = ILike(`%${query.name}%`)
-    let courts = await this.courtsRepository.find(option)
-
-    // let courts = await this.courtsRepository.find({
-    //   name: ILike(`%${query.name}%`)
-    // })
-
-    return courts
   }
 
   async addCourt(courtData: Court): Promise<Object> {
