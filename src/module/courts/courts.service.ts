@@ -10,9 +10,9 @@ export class CourtService {
     @InjectRepository(Court) private courtsRepository: Repository<Court>,
   ) { }
 
-  async queryCourts(query: { page, size, city_code, dist_code }): Promise<Object> {
+  async queryCourts(query: { page, size, city_code, dist_code, name }): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
-    let where = {}
+    let where:any = {}
     let filters = ['city_code', 'dist_code']
     filters.forEach(key => query[key] ? where[key] = query[key] : '')
     let [content, total] = await this.courtsRepository.findAndCount({

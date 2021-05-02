@@ -77,7 +77,7 @@ export class Court {
     spatialFeatureType: 'Point',
     srid: 4326
   })
-  geometry: string;
+  geometry: object;
 
   @OneToMany(() => Game, game => game.court_detail)
   games: Game[]

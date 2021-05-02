@@ -6,6 +6,7 @@ import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
 import { IPageQuery } from '../../interface/index';
+import { ILike } from "typeorm";
 
 interface IGameQueryParams extends IPageQuery {
   court_type?: string,
@@ -14,6 +15,7 @@ interface IGameQueryParams extends IPageQuery {
   dist_code?: string,
   start?: string,
   end?: string,
+  game_name?: string,
 
 }
 
@@ -43,7 +45,7 @@ export class GamesService {
 
   async queryGames(query: IGameQueryParams): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
-    let { city_code, dist_code, court_type, game_type, start, end } = query
+    let { city_code, dist_code, court_type, game_type, start, end, game_name } = query
     let where: any = {
       is_public: true,
       sell_start_at: LessThanOrEqual(new Date()),
@@ -57,6 +59,8 @@ export class GamesService {
       where.game_start_at = MoreThanOrEqual(start)
     if (end)
       where.game_end_at = LessThanOrEqual(end)
+    if (query.game_name)
+      where.game_name = ILike(`%${query.game_name}%`)
 
     let [content, total] = await this.gamesRepository.findAndCount({
       join: {
