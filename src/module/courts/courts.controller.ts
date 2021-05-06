@@ -22,13 +22,11 @@ export class CourtController {
   ) { }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   async queryCourts(@Query() query): Promise<Object> {
     return this.courtService.queryCourts(query);
   }
 
   @Get('/:court_id')
-  @UseGuards(JwtAuthGuard)
   async getGameById(@Param('court_id') court_id): Promise<Object> {
     return this.courtService.findCourt({ court_id });
   }
