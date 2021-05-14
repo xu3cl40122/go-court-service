@@ -80,6 +80,20 @@ export class UserController {
       })
   }
 
+  // 發 email 驗證碼
+  @Put('forgot/verification')
+  async forgotPassword(@Body() reqBody) {
+    let verification_type = 'FORGOT_PASSWORD'
+    return this.userService.sendVerification(reqBody.email, verification_type)
+      .catch(error => {
+        if (error === 'user not found')
+          throw new HttpException(error, HttpStatus.BAD_REQUEST)
+        if (error === 'request later')
+          throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
+        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
+      })
+  }
+
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getSelfProfile(@Req() req): Promise<Object> {

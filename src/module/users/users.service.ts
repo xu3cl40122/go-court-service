@@ -38,7 +38,7 @@ export class UsersService {
   async sendVerification(email: string, verification_type: string, expireMinute = 5, resendMinute = 3) {
     let user = await this.findUser({ email })
     if (!user) throw 'user not found'
-    if (user.user_status !== 'INITIAL') throw 'not initial user'
+    if (verification_type === 'ENABLE_ACCOUNT' && user.user_status !== 'INITIAL') throw 'not initial user'
 
     let { user_id } = user
     let lastVerification = await this.findVerification({ user_id })

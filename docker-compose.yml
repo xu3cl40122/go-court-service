@@ -60,7 +60,6 @@ services:
 networks:
   postgres_network:
   backend:
-  
       
 volumes:
   postgres:

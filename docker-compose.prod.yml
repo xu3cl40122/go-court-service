@@ -1,42 +1,18 @@
 version: "3.7"
 services:
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile.nginx.prod
-    restart: unless-stopped
-    volumes:
-      - ./frontend/:/frontend/
-    depends_on:
-      - main
-    networks:
-      - backend
-    ports:
-      - 80:80
-      - 443:443
   main:
     container_name: main
     image: xu3cl40122/gc-service:latest
-    # 可能因為 ec2 memory 太小 build 都失敗 改成先在 local build image 傳到 docker hub
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile.prod
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     networks:
-      - backend
       - postgres_network
     depends_on: 
       - postgres
     ports:
       - 3000:3000
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          # memory: 800M
     command: node dist/main
 
   postgres:
@@ -63,17 +39,11 @@ services:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
       - postgres_network
-      # - file_postgres
     restart: unless-stopped
 
 networks:
   postgres_network:
-  backend:
-    # driver: bridge
-  # file_postgres:
-  #   external:
-  #     name: file_postgres
-      
+
 volumes:
   postgres:
   pgadmin:
