@@ -79,8 +79,11 @@ export class Court {
   })
   geometry: object;
 
-  @OneToMany(() => Game, game => game.court_detail)
-  games: Game[]
+  @Column({
+    type: "jsonb",
+    default: {}
+  })
+  meta: object;
 
   @CreateDateColumn()
   created_at: Date;

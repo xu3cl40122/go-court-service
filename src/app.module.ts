@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { Connection } from 'typeorm';
+import { TypeOrmModule, } from '@nestjs/typeorm'
+import { Connection, getConnectionOptions } from 'typeorm';
 import { UsersModule } from './module/users/users.module'
 import { AuthModule } from './module/auth/auth.module'
 import { ConfigModule } from '@nestjs/config';
@@ -14,13 +14,22 @@ import * as AWS from 'aws-sdk';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => {
+        let setting = await getConnectionOptions()
+        return Object.assign(setting, {
+          // 只有在開發模式啟用同步 避免損害 production 資料
+          synchronize: process.env.NODE_ENV === 'development',
+        })
+
+      }
+    }),
     // can get env setting
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: 'app.env'
     }),
-   
+
     UsersModule,
     AuthModule,
     CourtModule,

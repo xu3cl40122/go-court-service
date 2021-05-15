@@ -1,17 +1,5 @@
 version: "3.7"
 services:
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile.nginx
-    # image: nginx
-    restart: unless-stopped
-    depends_on:
-      - main
-    networks:
-      - backend
-    ports:
-      - 80:80
   main:
     container_name: main
     build:
@@ -20,7 +8,6 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     networks:
-      - backend
       - postgres_network
     depends_on: 
       - postgres
@@ -59,7 +46,6 @@ services:
 
 networks:
   postgres_network:
-  backend:
       
 volumes:
   postgres:
