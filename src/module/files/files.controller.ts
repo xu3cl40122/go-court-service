@@ -45,7 +45,11 @@ export class FilesController {
 
   @Put('/:file_id/content')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fieldSize: 1024 * 1024 * 20,
+    }
+  }))
   async updateFileContent(@Req() req, @Param('file_id') file_id, @UploadedFile() fileContent: Express.Multer.File): Promise<Object> {
     let file = await this.filesService.findFile({ file_id })
     if (!file)
