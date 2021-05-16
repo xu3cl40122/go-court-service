@@ -22,7 +22,7 @@
 `scp -i {path of key} -r {file path}  ec2-user@ec2-52-11-194-84.us-west-2.compute.amazonaws.com:{target path}`
 - build docker image 
 `docker build -t {image_tag} -f {dockerfile} .`
-ex: `docker build -t xu3cl40122/gc-service -f Dockerfile.prod .`
+ex: `docker build -t xu3cl40122/gc-service -f Dockerfile.prod . --nocache`
 
 
 

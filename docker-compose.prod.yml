@@ -3,9 +3,6 @@ services:
   main:
     container_name: main
     image: xu3cl40122/gc-service:latest
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
     networks:
       - postgres_network
     depends_on: 

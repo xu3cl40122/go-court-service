@@ -17,9 +17,10 @@ import * as AWS from 'aws-sdk';
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         let setting = await getConnectionOptions()
+        console.log('process.env.NODE_ENV', process.env.NODE_ENV)
         return Object.assign(setting, {
           // 只有在開發模式啟用同步 避免損害 production 資料
-          synchronize: process.env.NODE_ENV === 'development',
+          // synchronize: process.env.NODE_ENV === 'development',
         })
 
       }
