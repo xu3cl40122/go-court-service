@@ -4,10 +4,8 @@
 
 FROM node:14 AS builder
 WORKDIR /usr/src/app
-ENV NODE_ENV=production
 COPY ./package.json ./
 RUN npm install
-RUN npm install nest
 COPY . .
 RUN npm run build
 
@@ -16,5 +14,5 @@ RUN npm run build
 FROM node:14-alpine
 WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app ./
-RUN ls -i
+ENV NODE_ENV=production
 CMD ["npm", "run", "start:prod"]
