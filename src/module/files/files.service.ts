@@ -17,7 +17,11 @@ interface IFileQueryParams extends IPageQuery {
 export class FilesService {
   constructor(
     @InjectRepository(File) private filesRepository: Repository<File>,
-  ) { }
+  ) {
+    this.bucketName = process.env.NODE_ENV === 'production' ? 'gc-file-service' : 'gc-file-service-dev'
+  }
+
+  bucketName = 'gc-file-service-dev'
 
   async findFile(query: { file_id?: string }) {
     return await this.filesRepository.findOne({
@@ -91,7 +95,7 @@ export class FilesService {
   async deleteFile(file_id: string): Promise<Object> {
     let s3 = new AWS.S3()
     let params = {
-      Bucket: "gc-file-service",
+      Bucket: this.bucketName,
       Key: file_id,
     }
     s3.deleteObject(params).promise()
@@ -102,15 +106,28 @@ export class FilesService {
     let s3 = new AWS.S3()
     let params = {
       Body: fileContent.buffer,
-      Bucket: "gc-file-service",
+      Bucket: this.bucketName,
       Key: file.file_id,
       ACL: file.is_public ? 'public-read' : 'authenticated-read',
       ContentType: fileContent.mimetype
     };
 
     await s3.putObject(params).promise().catch(() => { throw 'upload failed' })
-    file.file_url = `https://gc-file-service.s3-us-west-2.amazonaws.com/${file.file_id}`
+    file.file_url = `https://${this.bucketName}.s3-us-west-2.amazonaws.com/${file.file_id}`
     return this.updateFile(file.file_id, file)
+  }
+
+  async getFileContent(file: File) {
+    let s3 = new AWS.S3()
+    let params = {
+      Bucket: this.bucketName,
+      Key: file.file_id,
+    };
+    let res:any = await s3.getObject(params).promise().catch((err) => { throw err })
+    console.log(res)
+    return res
+    // file.file_url = `https://${this.bucketName}.s3-us-west-2.amazonaws.com/${file.file_id}`
+    // return this.updateFile(file.file_id, file)
   }
 
 }

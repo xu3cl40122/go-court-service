@@ -1,6 +1,6 @@
 import { FilesService } from './files.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { Express } from 'express'
+import { Express, Response } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
 import {
   Controller,
@@ -16,7 +16,8 @@ import {
   UseGuards,
   Req,
   UseInterceptors,
-  UploadedFile
+  UploadedFile,
+  Res
 } from '@nestjs/common';
 
 
@@ -58,6 +59,23 @@ export class FilesController {
       throw new HttpException('only admin or file owner can update', HttpStatus.FORBIDDEN)
 
     return await this.filesService.updateFileContent(file, fileContent);
+  }
+
+
+  @Get('/:file_id/content')
+  @UseGuards(JwtAuthGuard)
+  async getFileContent(@Req() req, @Param('file_id') file_id,  @Res() res: Response): Promise<Object> {
+    let file = await this.filesService.findFile({ file_id })
+    if (!file)
+      throw new HttpException('file not found', HttpStatus.BAD_REQUEST)
+    if (!file.is_public && file.created_by !== req.payload.user_id)
+      throw new HttpException('only file owner can acceess', HttpStatus.FORBIDDEN)
+
+    let fileContent =  await this.filesService.getFileContent(file);
+    res.set({
+      'Content-Type': fileContent.ContentType,
+    });
+    return res.send(fileContent.Body)
   }
 
   @Put('/:file_id')
