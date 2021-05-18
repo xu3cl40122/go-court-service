@@ -28,8 +28,8 @@ export class AuthController {
     if (user.user_status === 'DISABLED')
       throw new HttpException('user is disabled', HttpStatus.FORBIDDEN)
 
-    let isLoginSucess = await bcrypt.compare(password, user.password).catch(() => false)
-    if (!isLoginSucess)
+    let isLoginSuccess = await bcrypt.compare(password, user.password).catch(() => false)
+    if (!isLoginSuccess)
       throw new HttpException('password wrong', HttpStatus.UNAUTHORIZED)
     if (user.user_status === 'INITIAL')
       throw new HttpException('initial user should enable account before login', HttpStatus.NOT_ACCEPTABLE)

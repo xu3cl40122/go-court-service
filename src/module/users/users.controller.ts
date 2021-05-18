@@ -79,6 +79,13 @@ export class UserController {
         throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
       })
   }
+  // 透過 email 驗證碼啟用帳號
+  @Put('users/password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(@Req() req, @Body() body) {
+    let user = await this.userService.findUserWithPwd({ user_id: req.payload.user_id })
+    return this.userService.changePassword(user, body)
+  }
 
   // 發 email 驗證碼
   @Put('forgot/verification')

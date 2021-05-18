@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
@@ -15,6 +19,7 @@ export class UsersService {
     @InjectRepository(Verification) private verificationRepository: Repository<Verification>,
     private messageService: MessageService
   ) { }
+  saltRound = 10
 
   async addUser(userData: User, user_status = 'INITIAL'): Promise<Object> {
     const user = new User();
@@ -28,11 +33,23 @@ export class UsersService {
       'meta',
     ]
     columns.forEach(key => user[key] = userData[key])
-    let saltRound = 10
-    let hashedPwd = await bcrypt.hash(userData.password, saltRound)
+    let hashedPwd = await bcrypt.hash(userData.password, this.saltRound)
     user.password = hashedPwd
     user.user_status = user_status
     return await this.usersRepository.save(user);
+  }
+
+  async changePassword(user: User, body: { password: string, new_password: string }): Promise<Object> {
+    let pass = await bcrypt.compare(body.password, user.password).catch(() => false)
+    if (!pass) throw new HttpException('wrong password', HttpStatus.UNAUTHORIZED)
+    if (body.new_password.length < 8) throw new HttpException('invalid password formate', HttpStatus.BAD_REQUEST)
+    let hashedPwd = await bcrypt.hash(body.new_password, this.saltRound)
+    return await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ password: hashedPwd })
+      .where({ user_id: user.user_id })
+      .execute();
   }
 
   async sendVerification(email: string, verification_type: string, expireMinute = 5, resendMinute = 3) {
@@ -106,10 +123,6 @@ export class UsersService {
     return raw?.[0]
   }
 
-  // async editUser(user_id: string, userData: User) {
-  //   let user = await this.findUser({user_id})
-  // }
-
   async queryUsers(reqQuery: { page, size }): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
     let [content, total] = await this.usersRepository.findAndCount({
@@ -128,10 +141,17 @@ export class UsersService {
     return await this.usersRepository.findOne(query)
   }
 
-  async findUserWithPwd({ email }) {
+  async findUserWithPwd(query: { email?, user_id?}) {
+    let { email, user_id } = query
+    let conditon: any = {}
+    if (email)
+      conditon.email = email
+    if (user_id)
+      conditon.user_id = user_id
+
     return await this.usersRepository
       .createQueryBuilder('user')
-      .where("user.email = :email", { email })
+      .where(conditon)
       .addSelect("user.password")
       .getOne();
   }
