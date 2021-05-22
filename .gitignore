@@ -6,6 +6,6 @@ dist/
 tmp/
 temp/
 *.pem
-# aws.config.json
-# *.env
+aws.config.json
+*.env
 
