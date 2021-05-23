@@ -1,21 +1,23 @@
 import { Module } from '@nestjs/common';
-import { GamesService } from './games.service';
-import { GamesController } from './games.controller';
+import { TicketsController } from './tickets.controller';
+import { TicketsService } from './tickets.service';
+import { GamesModule } from '../games/games.module'
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from '../users/users.module';
 import { Game } from '../../entity/game.entity';
 import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
+import { UsersModule } from '../users/users.module'
 
 @Module({
-  // 要把要用到 Repository import 進來
   imports: [
+    GamesModule,
     UsersModule,
     TypeOrmModule.forFeature([Game, GameUser, GameTicket, GameStock])
   ],
-  providers: [GamesService],
-  controllers: [GamesController],
-  exports: [GamesService]
+  controllers: [TicketsController],
+  providers: [TicketsService],
+  // 要給別的 module 用的部分
+  exports: [TicketsService]
 })
-export class GamesModule { }
+export class TicketsModule { }

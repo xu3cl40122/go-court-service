@@ -10,6 +10,7 @@ import { CourtModule } from './module/courts/courts.module';
 import { GamesModule } from './module/games/games.module';
 import { MessageModule } from './module/message/message.module';
 import { FilesModule } from './module/files/files.module';
+import { TicketsModule } from './module/tickets/tickets.module';
 import * as AWS from 'aws-sdk';
 
 @Module({
@@ -37,6 +38,7 @@ import * as AWS from 'aws-sdk';
     GamesModule,
     MessageModule,
     FilesModule,
+    TicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

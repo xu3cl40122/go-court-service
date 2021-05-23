@@ -2,6 +2,7 @@ import {
   Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
   Column, ManyToOne, OneToMany, OneToOne, JoinColumn
 } from "typeorm";
+import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity'
 import { Game } from './game.entity'
 import { GameStock } from './game_stock.entity'
@@ -18,27 +19,34 @@ export class GameTicket {
     this.owner_user_id = owner_user_id
   }
   @PrimaryGeneratedColumn("uuid")
+  @ApiProperty()
   game_ticket_id: string;
 
   @Column("uuid")
+  @ApiProperty()
   game_id: string;
 
   @ManyToOne(() => Game, game => game.game_id)
   @JoinColumn({ name: 'game_id' })
+  @ApiProperty()
   game_detail: Game
 
   @Column("uuid")
+  @ApiProperty()
   game_stock_id: string;
 
   @ManyToOne(() => GameStock, game_stock => game_stock.game_stock_id)
   @JoinColumn({ name: 'game_stock_id' })
+  @ApiProperty()
   game_stock_detail: GameStock;
 
   @Column("uuid")
+  @ApiProperty()
   owner_user_id: string
 
   @ManyToOne(() => User, user => user.user_id)
   @JoinColumn({ name: 'owner_user_id' })
+  @ApiProperty()
   owner_user_detail: User;
 
   @Column({
@@ -46,24 +54,29 @@ export class GameTicket {
     enum: GameTicketStatus,
     default: 'PENDING'
   })
+  @ApiProperty({ enum: GameTicketStatus })
   game_ticket_status: string;
 
   @Column({
     type: 'boolean',
     default: false
   })
+  @ApiProperty()
   isPaid: boolean
 
   @Column({
     type: "jsonb",
     default: {}
   })
+  @ApiProperty()
   meta: object;
 
   @CreateDateColumn()
+  @ApiProperty()
   created_at: Date;
 
   @UpdateDateColumn()
+  @ApiProperty()
   updated_at: Date;
 
 }
