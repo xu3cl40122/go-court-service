@@ -19,8 +19,7 @@ async function bootstrap() {
 
   // create api spec
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
+    .setTitle('GO-COURT API spec')
     .setVersion('1.0')
     // .addTag('cats')
     .build();
