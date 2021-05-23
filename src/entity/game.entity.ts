@@ -48,7 +48,7 @@ export class Game {
   court_detail: Court;
 
   @OneToMany(() => GameStock, gameStock => gameStock.game_detail)
-  @ApiProperty()
+  @ApiProperty({type: [GameStock]})
   game_stock: GameStock[]
 
   @Column({

@@ -6,6 +6,7 @@ import { User } from './user.entity'
 import { Game } from './game.entity'
 import { GameTicket } from './game_ticket.entity'
 import { GameStock } from './game_stock.entity'
+import { ApiProperty } from '@nestjs/swagger';
 
 
 @Entity()
@@ -19,23 +20,28 @@ export class GameUser {
   }
 
   @PrimaryColumn("uuid")
+  @ApiProperty()
   game_ticket_id: string;
 
   @OneToOne(() => GameTicket, gameTicket => gameTicket.game_ticket_id)
   @JoinColumn({ name: 'game_ticket_id' })
+  @ApiProperty()
   game_ticket_detail: GameTicket;
 
   @Column("uuid")
+  @ApiProperty()
   game_stock_id: string;
 
   @ManyToOne(() => GameStock, gameStock => gameStock.game_stock_id)
   @JoinColumn({ name: 'game_stock_id' })
+  @ApiProperty()
   game_stock_detail: GameStock;
 
   @Column({
     type: "uuid",
     nullable: true
   })
+  @ApiProperty()
   game_id: string;
 
   // 不知道為何要 join game 就會報 foreignkey 的錯 猜測是跟 game ticket 都用到 game_id ??
@@ -44,16 +50,20 @@ export class GameUser {
   // game_detail: string
 
   @Column("uuid")
+  @ApiProperty()
   game_user_id: string;
 
   @ManyToOne(() => User, user => user.user_id)
   @JoinColumn({ name: 'game_user_id' })
+  @ApiProperty()
   game_user_detail: User;
 
   @CreateDateColumn()
+  @ApiProperty()
   created_at: Date;
 
   @UpdateDateColumn()
+  @ApiProperty()
   updated_at: Date;
 
 }

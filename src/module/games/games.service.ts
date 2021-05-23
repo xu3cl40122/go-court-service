@@ -116,7 +116,7 @@ export class GamesService {
     return await this.gamesRepository.save(game);
   }
 
-  async updateGame(game_id: string, gameData: Game): Promise<Object> {
+  async updateGame(game_id: string, gameData: CreateGameDto): Promise<Object> {
     const game = new Game();
     let columns = [
       'game_name',

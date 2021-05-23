@@ -121,7 +121,7 @@ export class TicketsController {
 
   // 驗證票券
   @Put('/games/:game_id/tickets/:game_ticket_id/verify')
-  @ApiOperation({ summary: '球賽主辦者驗證參賽者票券' })
+  @ApiOperation({ summary: '球賽主辦者驗證參賽者票券(被驗證者會被加入該球賽 game user)' })
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse()
