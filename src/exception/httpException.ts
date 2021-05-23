@@ -8,13 +8,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
-    const message = exception.message
-    
+    const message = exception.message.toString()
+    // dot 驗證的 msg
+    let dotMsg:any = exception.getResponse()
     response
       .status(status)
       .json({
         statusCode: status,
-        message,
+        message: dotMsg ?? message,
         timestamp: new Date().toISOString(),
         path: request.url,
       });

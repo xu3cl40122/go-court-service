@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
 import { Verification, VerificationType } from '../../entity/verification.entity';
 import { generateVerificationCode } from '../../methods/'
+import { UserDto } from '../../dto/user.dto'
 import { MessageService } from '../message/message.service'
 import * as dayjs from 'dayjs'
 import * as bcrypt from 'bcrypt'
@@ -21,7 +22,7 @@ export class UsersService {
   ) { }
   saltRound = 10
 
-  async addUser(userData: User, user_status = 'INITIAL'): Promise<Object> {
+  async addUser(userData: UserDto, user_status = 'INITIAL'): Promise<User> {
     const user = new User();
     let columns = [
       'profile_name',
@@ -161,6 +162,18 @@ export class UsersService {
       where: query,
       order: { created_at: 'DESC' }
     })
+  }
+
+  async deleteUser(user_id) {
+    let { raw } = await this.usersRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ user_status: 'DISABLED' })
+      .where("user_id = :user_id", { user_id })
+      .returning('*')
+      .execute();
+
+    return raw
   }
 
 }
