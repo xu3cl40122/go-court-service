@@ -11,6 +11,7 @@ import {
   HttpStatus,
   UseGuards,
   Req,
+  Inject, forwardRef
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { UsersService } from '../users/users.service';
@@ -19,7 +20,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { getManyResponseFor } from '../../methods/spec'
 import { GameTicket } from '../../entity/game_ticket.entity'
-import { PageQueryDto } from '../../dto/query.dto'
+import { PageQueryDto , TicketQueryDto} from '../../dto/query.dto'
 import { TransferTicketDto } from '../../dto/ticket.dto'
 
 @Controller('tickets')
@@ -27,15 +28,16 @@ import { TransferTicketDto } from '../../dto/ticket.dto'
 export class TicketsController {
   constructor(
     private readonly ticketsService: TicketsService,
+    private readonly usersService: UsersService,
     private readonly gamesService: GamesService,
-    private readonly usersService: UsersService) { }
+    ) { }
 
   @Get('')
   @ApiOperation({ summary: '查詢登入帳號有的票券' })
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse({ type: getManyResponseFor(GameTicket) })
-  async getMyTickets(@Req() req, @Query() query: PageQueryDto): Promise<Object> {
+  async getMyTickets(@Req() req, @Query() query: TicketQueryDto): Promise<Object> {
     return await this.ticketsService.queryTicketsOfUserId(req.payload.user_id, query);
   }
 

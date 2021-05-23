@@ -11,9 +11,12 @@ import {
   HttpStatus,
   UseGuards,
   Req,
+  Inject,
+  forwardRef
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { UsersService } from '../users/users.service';
+import { TicketsService } from '../tickets/tickets.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { CreateGameDto } from '../../dto/game.dto'
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
@@ -27,7 +30,8 @@ import { GameUser } from '../../entity/game_user.entity';
 export class GamesController {
   constructor(
     private readonly gamesService: GamesService,
-    private readonly usersService: UsersService) { }
+    private readonly usersService: UsersService,
+    private ticketsService: TicketsService) { }
 
   @Get()
   @ApiOperation({ summary: '搜尋球賽' })
@@ -35,47 +39,6 @@ export class GamesController {
   async queryGames(@Query() query: GameQueryDto): Promise<Object> {
     return await this.gamesService.queryGames(query);
   }
-
-  // // get 我有的票
-  // @Get('/tickets')
-  // @UseGuards(JwtAuthGuard)
-  // async getMyTickets(@Req() req, @Query() query): Promise<Object> {
-  //   return await this.gamesService.queryTicketsOfUserId(req.payload.user_id, query);
-  // }
-
-  // // 轉送票券
-  // @Put('/tickets/:game_ticket_id/transfer')
-  // @UseGuards(JwtAuthGuard)
-  // async transferTicket(@Req() req, @Param('game_ticket_id') game_ticket_id, @Body() body) {
-  //   let sender_id = req.payload.user_id
-  //   let receiver_id = body.receiver_id
-
-  //   let [user, ticket] = await Promise.all([this.usersService.findUser({ user_id: receiver_id }), this.gamesService.findGameTicket({ game_ticket_id })])
-  //   if (!ticket)
-  //     throw new HttpException('ticket not found', HttpStatus.BAD_REQUEST)
-  //   if (!user)
-  //     throw new HttpException('receiver not found', HttpStatus.BAD_REQUEST)
-  //   if (ticket.owner_user_id !== sender_id)
-  //     throw new HttpException('only owner of ticket can access', HttpStatus.FORBIDDEN)
-  //   if (ticket.game_ticket_status !== 'PENDING')
-  //     throw new HttpException("can't transfer ticket which ticket status isn't PENDING", HttpStatus.BAD_REQUEST)
-
-
-  //   return await this.gamesService.transferTicket(game_ticket_id, sender_id, receiver_id, ticket.meta)
-  // }
-
-  // // get 票 by id
-  // @Get('/tickets/:game_ticket_id')
-  // @UseGuards(JwtAuthGuard)
-  // async getTicketById(@Req() req, @Param('game_ticket_id') game_ticket_id): Promise<Object> {
-  //   let user_id = req.payload.user_id
-  //   let ticket = await this.gamesService.findGameTicket({ game_ticket_id });
-  //   if (!ticket)
-  //     throw new HttpException('ticket not found', HttpStatus.BAD_REQUEST)
-  //   if (ticket.owner_user_id !== user_id && ticket.game_detail.host_user_id !== user_id)
-  //     throw new HttpException('only host of game or owner of ticket can access', HttpStatus.FORBIDDEN)
-  //   return ticket
-  // }
 
   @Get('/host')
   @ApiOperation({ summary: '搜尋登入者主辦的球賽' })
@@ -155,12 +118,6 @@ export class GamesController {
     return await this.gamesService.queryGameUsers(game_id, query);
   }
 
-  // @Get('/:game_id/tickets')
-  // @UseGuards(JwtAuthGuard)
-  // async queryGameTickets(@Param('game_id') game_id, @Query() query): Promise<Object> {
-  //   return await this.gamesService.queryGameTickets(game_id, query);
-  // }
-
   /**
    * todo update 被用到的 game ticket 的 status
    * @param req 
@@ -194,7 +151,7 @@ export class GamesController {
     if (game.host_user_id !== req.payload.user_id)
       throw new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN)
 
-    let tickets = await this.gamesService.getGameTickets(game_id, {})
+    let tickets = await this.ticketsService.getGameTickets(game_id, {})
     let idMap = {}
     let game_users = []
     tickets.forEach(ticket => {
@@ -212,7 +169,7 @@ export class GamesController {
       })
   }
 
-   @Put('/:game_id/close')
+  @Put('/:game_id/close')
   @ApiOperation({ summary: '關閉球賽' })
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })

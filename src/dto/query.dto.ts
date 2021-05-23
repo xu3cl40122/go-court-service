@@ -50,3 +50,12 @@ export class CourtQueryDto extends PageQueryDto {
   name?: string
 
 }
+
+export class TicketQueryDto extends PageQueryDto {
+  // @ApiProperty({ required: false })
+  // game_id?: string
+  // @ApiProperty({ required: false })
+  // owner_user_id?: string
+  @ApiProperty({ required: false })
+  game_ticket_status?: string
+}

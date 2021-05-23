@@ -5,7 +5,7 @@ import { Game } from '../../entity/game.entity';
 import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
-import { GameQueryDto } from '../../dto/query.dto';
+import { PageQueryDto, TicketQueryDto } from '../../dto/query.dto';
 import { GamesService } from '../games/games.service'
 
 interface IBuyGameTicketBody {
@@ -58,7 +58,7 @@ export class TicketsService {
     })
   }
 
-  async queryTicketsOfUserId(owner_user_id, reqQuery: GameQueryDto): Promise<Object> {
+  async queryTicketsOfUserId(owner_user_id, reqQuery: TicketQueryDto): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
 
     let [content, total] = await this.gameTicketsRepository.findAndCount({
@@ -75,6 +75,7 @@ export class TicketsService {
     return { content, page, size, total, totalPage }
   }
 
+  // 找到所有票券(不分頁)
   async getGameTickets(game_id, option: { relations?: string[] }) {
     return await this.gameTicketsRepository.find({
       where: [{ game_id }],
@@ -85,7 +86,7 @@ export class TicketsService {
     })
   }
 
-  async queryGameTickets(game_id, query: GameQueryDto) {
+  async queryGameTickets(game_id, query: PageQueryDto) {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let [content, total] = await this.gameTicketsRepository.findAndCount({
       where: [{ game_id }],
@@ -114,7 +115,6 @@ export class TicketsService {
       let gameUser = new GameUser({ game_id, game_stock_id, game_ticket_id, game_user_id: owner_user_id })
       return await manager.save(gameUser)
     })
-    // return this.gameTicketsRepository.update(game_ticket_id, { game_ticket_status: 'VERIFIED' })
   }
 
   async transferTicket(game_ticket_id: string, sender_id: string, receiver_id: string, meta: any = {}) {

@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsUUID, IsString, IsOptional, IsDate, IsNumber, IsEnum, IsBoolean } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsUUID, IsString, IsOptional, IsDateString, IsNumber, IsEnum, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
 	CourtType,
@@ -17,30 +17,28 @@ export class CreateGameDto {
 	@ApiProperty()
 	game_name: string;
 
-	@IsUUID()
-	@ApiProperty()
 	host_user_id: string;
 
-	@IsUUID()
 	@ApiProperty()
 	court_id: string;
 
-	@IsDate()
+	@IsDateString()
 	@ApiProperty()
 	game_start_at: Date;
 
-	@IsDate()
+	@IsDateString()
 	@ApiProperty()
 	game_end_at: Date;
 
-	@IsDate()
+	@IsDateString()
 	@ApiProperty()
 	sell_start_at: Date;
 
-	@IsDate()
+	@IsDateString()
 	@ApiProperty()
 	sell_end_at: Date;
 
+	@IsOptional()
 	@IsNumber()
 	@ApiProperty()
 	total_player_number: number;
@@ -57,6 +55,7 @@ export class CreateGameDto {
 	@ApiProperty()
 	description: string;
 
+	@IsOptional()
 	@IsEnum(GameStatus)
 	@ApiProperty({ enum: GameStatus })
 	game_status: string;

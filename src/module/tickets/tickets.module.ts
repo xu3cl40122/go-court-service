@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TicketsController } from './tickets.controller';
 import { TicketsService } from './tickets.service';
 import { GamesModule } from '../games/games.module'
@@ -11,8 +11,9 @@ import { UsersModule } from '../users/users.module'
 
 @Module({
   imports: [
-    GamesModule,
     UsersModule,
+    // 解決 module 循環引用問題
+    forwardRef(() => GamesModule),
     TypeOrmModule.forFeature([Game, GameUser, GameTicket, GameStock])
   ],
   controllers: [TicketsController],
