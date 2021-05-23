@@ -10,9 +10,12 @@ import { Response } from 'express';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import * as bcrypt from 'bcrypt'
+import { LoginDto } from '../../dto/login.dto'
+import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(
     private readonly usersService: UsersService,
@@ -20,7 +23,9 @@ export class AuthController {
   ) { }
 
   @Post('/login')
-  async login(@Body() body, @Res() res: Response) {
+  @ApiOperation({ summary: '登入' })
+  @ApiOkResponse({description: 'JWT 放在 response header 的 Authorization'})
+  async login(@Body() body: LoginDto, @Res() res: Response) {
     let { email, password } = body
     let user = await this.usersService.findUserWithPwd({ email })
     if (!user)

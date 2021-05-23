@@ -3,18 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Court } from '../../entity/court.entity';
 import { ILike } from "typeorm";
-
+import { CourtQueryDto } from '../../dto/query.dto'
+import { CourtDto } from '../../dto/court.dto'
 @Injectable()
 export class CourtService {
   constructor(
     @InjectRepository(Court) private courtsRepository: Repository<Court>,
   ) { }
 
-  async queryCourts(query: { page, size, city_code, dist_code, name }): Promise<Object> {
+  async queryCourts(query: CourtQueryDto): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let { city_code, dist_code, name } = query
     let where: any = {}
-  
+
     if (city_code)
       where.city_code = city_code
     if (dist_code)
@@ -41,7 +42,7 @@ export class CourtService {
     })
   }
 
-  async addCourt(courtData: Court): Promise<Object> {
+  async addCourt(courtData: CourtDto): Promise<Object> {
     const court = new Court();
     let columns = [
       'name',
@@ -71,7 +72,7 @@ export class CourtService {
     return raw[0]
   }
 
-  async updateCourtById(court_id: string, courtData: Court): Promise<Object> {
+  async updateCourtById(court_id: string, courtData: CourtDto): Promise<Object> {
     const court = new Court();
     let columns = [
       'name',

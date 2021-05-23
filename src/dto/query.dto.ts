@@ -35,3 +35,18 @@ export class GameQueryDto extends PageQueryDto {
   @ApiProperty({ required: false })
   game_name?: string
 }
+export class CourtQueryDto extends PageQueryDto {
+  // @ApiProperty({ required: false })
+  // latitude?: number
+  // @ApiProperty({ required: false })
+  // longitude?: number
+  // @ApiProperty({ required: false })
+  // within_meters?: number
+  @ApiProperty({ required: false, example: '63000' })
+  dist_code?: string
+  @ApiProperty({ required: false, example: '63000170' })
+  city_code?: string
+  @ApiProperty({ required: false, example: '師大分部' })
+  name?: string
+
+}

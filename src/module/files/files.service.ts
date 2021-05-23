@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getManager } from 'typeorm';
 import { File } from '../../entity/file.entity'
 import { FileQueryDto } from '../../dto/query.dto'
+import { FileDto } from '../../dto/file.dto'
 import { Express } from 'express'
 // import entire SDK
 import * as AWS from 'aws-sdk';
@@ -48,7 +49,7 @@ export class FilesService {
     return { content, page, size, total, totalPage }
   }
 
-  async addFile(fileData: File): Promise<Object> {
+  async addFile(fileData: FileDto): Promise<Object> {
     const file = new File();
     let columns = [
       'file_name',

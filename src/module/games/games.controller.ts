@@ -212,7 +212,7 @@ export class GamesController {
       })
   }
 
-  @Put('/:game_id/close')
+   @Put('/:game_id/close')
   @ApiOperation({ summary: '關閉球賽' })
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
