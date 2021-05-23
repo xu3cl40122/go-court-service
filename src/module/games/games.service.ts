@@ -5,19 +5,9 @@ import { Game } from '../../entity/game.entity';
 import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
-import { IPageQuery } from '../../interface/index';
+import { GameQueryDto } from '../../dto/query.dto';
 import { ILike } from "typeorm";
-
-interface IGameQueryParams extends IPageQuery {
-  court_type?: string,
-  game_type?: string,
-  city_code?: string,
-  dist_code?: string,
-  start?: string,
-  end?: string,
-  game_name?: string,
-
-}
+import { CreateGameDto } from '../../dto/game.dto'
 
 interface IBuyGameTicketBody {
   game_id: string,
@@ -43,7 +33,7 @@ export class GamesService {
     })
   }
 
-  async queryGames(query: IGameQueryParams): Promise<Object> {
+  async queryGames(query: GameQueryDto): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let { city_code, dist_code, court_type, game_type, start, end, game_name } = query
     let where: any = {
@@ -104,7 +94,7 @@ export class GamesService {
     return { content, page, size, total, totalPage }
   }
 
-  async addGame(gameData: Game): Promise<Object> {
+  async addGame(gameData: CreateGameDto): Promise<Game> {
     const game = new Game();
     let columns = [
       'game_name',
@@ -202,7 +192,7 @@ export class GamesService {
     })
   }
 
-  async queryTicketsOfUserId(owner_user_id, reqQuery: IPageQuery): Promise<Object> {
+  async queryTicketsOfUserId(owner_user_id, reqQuery: GameQueryDto): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
 
     let [content, total] = await this.gameTicketsRepository.findAndCount({
@@ -229,7 +219,7 @@ export class GamesService {
     })
   }
 
-  async queryGameTickets(game_id, query: IPageQuery) {
+  async queryGameTickets(game_id, query: GameQueryDto) {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let [content, total] = await this.gameTicketsRepository.findAndCount({
       where: [{ game_id }],
@@ -299,7 +289,7 @@ export class GamesService {
     })
   }
 
-  async queryGameUsers(game_id, query: IPageQuery) {
+  async queryGameUsers(game_id, query: GameQueryDto) {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let [content, total] = await this.gameUsersRepository.findAndCount({
       where: [{ game_id }],

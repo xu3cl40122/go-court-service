@@ -2,16 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getManager } from 'typeorm';
 import { File } from '../../entity/file.entity'
-import { IPageQuery } from '../../interface/index';
+import { FileQueryDto } from '../../dto/query.dto'
 import { Express } from 'express'
 // import entire SDK
 import * as AWS from 'aws-sdk';
 
-interface IFileQueryParams extends IPageQuery {
-  tag?: string,
-  reference_id?: string,
-  created_by?: string,
-}
+
 
 @Injectable()
 export class FilesService {
@@ -30,7 +26,7 @@ export class FilesService {
   }
 
   // game part 
-  async queryFiles(query: IFileQueryParams) {
+  async queryFiles(query: FileQueryDto) {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
     let { tag, reference_id, created_by } = query
     let where: any = {}

@@ -18,8 +18,9 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserDto, PasswordDto } from '../../dto/user.dto'
 import { VerificationDto, SendEmailDto } from '../../dto/verification.dto'
 import { User } from '../../entity/user.entity';
-import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { getManyResponseFor } from '../../methods/spec'
+import { PageQueryDto } from '../../dto/query.dto'
 
 @ApiTags('users')
 @Controller()
@@ -72,7 +73,7 @@ export class UserController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: '註冊帳號，產生的 user entity 需透過 email 驗證才能啟用' })
+  @ApiOperation({ summary: '註冊帳號(產生的 user entity 需透過 email 驗證才能啟用)' })
   @ApiCreatedResponse({ type: User })
   async register(@Body() reqBody: UserDto): Promise<User> {
     return this.userService.addUser(reqBody)
@@ -164,8 +165,10 @@ export class UserController {
   @ApiOperation({ summary: '查詢所有使用者' })
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
+  @ApiQuery({ name: 'page', type: Number, required: false })
+  @ApiQuery({ name: 'size', type: Number, required: false })
   @ApiOkResponse({ type: getManyResponseFor(User) })
-  async queryUsers(@Query() reqQuery): Promise<Object> {
+  async queryUsers(@Query() reqQuery: PageQueryDto): Promise<Object> {
     return this.userService.queryUsers(reqQuery);
   }
 

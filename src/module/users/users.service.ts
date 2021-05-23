@@ -12,6 +12,7 @@ import { UserDto } from '../../dto/user.dto'
 import { MessageService } from '../message/message.service'
 import * as dayjs from 'dayjs'
 import * as bcrypt from 'bcrypt'
+import { PageQueryDto } from '../../dto/query.dto'
 
 @Injectable()
 export class UsersService {
@@ -124,7 +125,7 @@ export class UsersService {
     return raw?.[0]
   }
 
-  async queryUsers(reqQuery: { page, size }): Promise<Object> {
+  async queryUsers(reqQuery: PageQueryDto): Promise<Object> {
     let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
     let [content, total] = await this.usersRepository.findAndCount({
       take: size,

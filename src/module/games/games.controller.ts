@@ -15,15 +15,23 @@ import {
 import { GamesService } from './games.service';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
+import { CreateGameDto } from '../../dto/game.dto'
+import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { Game } from '../../entity/game.entity'
+import { GameQueryDto } from '../../dto/query.dto'
+import { getManyResponseFor } from '../../methods/spec'
 
 @Controller('games')
+@ApiTags('games')
 export class GamesController {
   constructor(
     private readonly gamesService: GamesService,
     private readonly usersService: UsersService) { }
 
   @Get()
-  async queryGames(@Query() query): Promise<Object> {
+  @ApiOperation({ summary: '搜尋球賽' })
+  @ApiOkResponse({ type: getManyResponseFor(Game) })
+  async queryGames(@Query() query: GameQueryDto): Promise<Object> {
     return await this.gamesService.queryGames(query);
   }
 
@@ -82,8 +90,11 @@ export class GamesController {
   }
 
   @Post()
+  @ApiOperation({ summary: '建立球賽 entity' })
   @UseGuards(JwtAuthGuard)
-  async addGame(@Req() req, @Body() body): Promise<Object> {
+  @ApiHeader({ name: 'Authorization', description: 'JWT' })
+  @ApiCreatedResponse({ type: Game })
+  async addGame(@Req() req, @Body() body: CreateGameDto): Promise<Game> {
     body.host_user_id = req.payload.user_id
     return await this.gamesService.addGame(body);
   }
@@ -167,7 +178,7 @@ export class GamesController {
       throw new HttpException('wrong game_id', HttpStatus.BAD_REQUEST)
     if (game.host_user_id !== req.payload.user_id)
       throw new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN)
-   
+
     let tickets = await this.gamesService.getGameTickets(game_id, {})
     let idMap = {}
     let game_users = []
