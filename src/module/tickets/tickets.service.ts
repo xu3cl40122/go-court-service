@@ -58,22 +58,22 @@ export class TicketsService {
     })
   }
 
-  async queryTicketsOfUserId(owner_user_id, reqQuery: TicketQueryDto): Promise<Object> {
-    let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
+  // async queryTicketsOfUserId(owner_user_id, reqQuery: TicketQueryDto): Promise<Object> {
+  //   let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
 
-    let [content, total] = await this.gameTicketsRepository.findAndCount({
-      take: size,
-      skip: page * size,
-      relations: ['game_detail', 'game_detail.court_detail', 'game_stock_detail'],
-      where: [{ owner_user_id }],
-      order: {
-        created_at: 'DESC'
-      }
-    })
+  //   let [content, total] = await this.gameTicketsRepository.findAndCount({
+  //     take: size,
+  //     skip: page * size,
+  //     relations: ['game_detail', 'game_detail.court_detail', 'game_stock_detail'],
+  //     where: [{ owner_user_id }],
+  //     order: {
+  //       created_at: 'DESC'
+  //     }
+  //   })
 
-    let totalPage = Math.ceil(total / size)
-    return { content, page, size, total, totalPage }
-  }
+  //   let totalPage = Math.ceil(total / size)
+  //   return { content, page, size, total, totalPage }
+  // }
 
   // 找到所有票券(不分頁)
   async getGameTickets(game_id, option: { relations?: string[] }) {
@@ -86,11 +86,20 @@ export class TicketsService {
     })
   }
 
-  async queryGameTickets(game_id, query: PageQueryDto) {
+  async queryGameTickets(query: TicketQueryDto, relations = ["game_stock_detail", 'owner_user_detail']) {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
+    let condition: any = {}
+    let { game_id, owner_user_id, game_ticket_status } = query
+    if (game_id)
+      condition.game_id = game_id
+    if (owner_user_id)
+      condition.owner_user_id = owner_user_id
+    if (game_ticket_status)
+      condition.game_ticket_status = game_ticket_status
+
     let [content, total] = await this.gameTicketsRepository.findAndCount({
-      where: [{ game_id }],
-      relations: ["game_stock_detail", 'owner_user_detail'],
+      where: condition,
+      relations: relations,
       take: size,
       skip: page * size,
       order: {

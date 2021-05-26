@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { getManyResponseFor } from '../../methods/spec'
 import { GameTicket } from '../../entity/game_ticket.entity'
-import { PageQueryDto , TicketQueryDto} from '../../dto/query.dto'
+import { PageQueryDto, TicketQueryDto } from '../../dto/query.dto'
 import { TransferTicketDto } from '../../dto/ticket.dto'
 
 @Controller('tickets')
@@ -30,7 +30,7 @@ export class TicketsController {
     private readonly ticketsService: TicketsService,
     private readonly usersService: UsersService,
     private readonly gamesService: GamesService,
-    ) { }
+  ) { }
 
   @Get('')
   @ApiOperation({ summary: '查詢登入帳號有的票券' })
@@ -38,7 +38,9 @@ export class TicketsController {
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse({ type: getManyResponseFor(GameTicket) })
   async getMyTickets(@Req() req, @Query() query: TicketQueryDto): Promise<Object> {
-    return await this.ticketsService.queryTicketsOfUserId(req.payload.user_id, query);
+    query.owner_user_id = req.payload.user_id
+    let relations = ['game_detail', 'game_detail.court_detail', 'game_stock_detail']
+    return await this.ticketsService.queryGameTickets(query, relations);
   }
 
   @Get('/:game_ticket_id')
@@ -95,8 +97,9 @@ export class TicketsController {
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse({ type: getManyResponseFor(GameTicket) })
-  async queryGameTickets(@Param('game_id') game_id, @Query() query: PageQueryDto): Promise<Object> {
-    return await this.ticketsService.queryGameTickets(game_id, query);
+  async queryGameTickets(@Param('game_id') game_id, @Query() query: TicketQueryDto): Promise<Object> {
+    query.game_id = game_id
+    return await this.ticketsService.queryGameTickets(query);
   }
 
   @Put('/:game_ticket_id/transfer')
