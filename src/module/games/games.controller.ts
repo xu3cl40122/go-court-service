@@ -183,38 +183,15 @@ export class GamesController {
     return await this.gamesService.closeGame(game_id);
   }
 
-  // // 驗證票券
-  // @Put('/:game_id/tickets/:game_ticket_id/verify')
-  // @UseGuards(JwtAuthGuard)
-  // async verifyTicket(@Req() req, @Param('game_id') game_id, @Param('game_ticket_id') game_ticket_id) {
-  //   let [game, gameTicket] = await Promise.all([this.gamesService.findGame({ game_id }), this.gamesService.findGameTicket({ game_ticket_id })])
-  //   if (!game)
-  //     throw new HttpException('wrong game_id', HttpStatus.BAD_REQUEST)
-  //   if (game.host_user_id !== req.payload.user_id)
-  //     throw new HttpException('only admin or host user can verify ticket', HttpStatus.FORBIDDEN)
-  //   if (!gameTicket || game.game_id !== gameTicket.game_id)
-  //     throw new HttpException('wrong ticket', HttpStatus.BAD_REQUEST)
+  @Put('/admin/clean')
+  @ApiOperation({ summary: '關閉所有已超過結束時間的球賽(有排程定時執行)' })
+  @UseGuards(JwtAuthGuard)
+  @ApiHeader({ name: 'Authorization', description: 'JWT' })
+  async cleanGames(@Req() req): Promise<Object> {
+    if (req.payload.user_role !== 'ADMIN')
+      throw new HttpException('permission denied', HttpStatus.FORBIDDEN)
 
-  //   return await this.gamesService.verifyTicket(gameTicket)
-  // }
-
-  // // 結帳票券
-  // @Post('/checkout')
-  // @UseGuards(JwtAuthGuard)
-  // async checkout(@Req() req, @Body() carts) {
-  //   carts.forEach(d => d.owner_user_id = req.payload.user_id)
-  //   let tickets
-
-  //   try {
-  //     tickets = await this.gamesService.checkout(carts)
-  //   } catch (error) {
-  //     if (error.code === '23514')
-  //       throw new HttpException('tickets sold out', HttpStatus.BAD_REQUEST)
-  //     throw new HttpException('buy ticket failed', HttpStatus.INTERNAL_SERVER_ERROR)
-  //   }
-
-  //   return { tickets }
-  // }
-
+    return this.gamesService.cleanGames()
+  }
 
 }

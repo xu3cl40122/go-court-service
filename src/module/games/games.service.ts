@@ -1,4 +1,4 @@
-import { Injectable, Inject , forwardRef} from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getManager, In, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { Game } from '../../entity/game.entity';
@@ -8,6 +8,7 @@ import { GameStock } from '../../entity/game_stock.entity';
 import { GameQueryDto } from '../../dto/query.dto';
 import { ILike } from "typeorm";
 import { CreateGameDto } from '../../dto/game.dto'
+import { Cron } from '@nestjs/schedule';
 
 interface IBuyGameTicketBody {
   game_id: string,
@@ -23,7 +24,7 @@ export class GamesService {
     @InjectRepository(GameUser) private gameUsersRepository: Repository<GameUser>,
     @InjectRepository(GameTicket) private gameTicketsRepository: Repository<GameTicket>,
     @InjectRepository(GameStock) private gameStockRepository: Repository<GameStock>,
-  
+
   ) { }
 
   // game part 
@@ -95,6 +96,17 @@ export class GamesService {
     return { content, page, size, total, totalPage }
   }
 
+  async findGameShouldClose(): Promise<Game[]> {
+    let games = await this.gamesRepository.find({
+      where: {
+        game_status: 'PLAYING',
+        game_end_at: LessThanOrEqual(new Date())
+      }
+    })
+
+    return games
+  }
+
   async addGame(gameData: CreateGameDto): Promise<Game> {
     const game = new Game();
     let columns = [
@@ -155,9 +167,18 @@ export class GamesService {
   async closeGame(game_id: string) {
     return this.gamesRepository.update(game_id, { game_status: 'FINISHED' })
   }
-  
+
   async initGame(game_id: string) {
     return this.gamesRepository.update(game_id, { game_status: 'PLAYING' })
+  }
+
+  // 關掉過期但沒關閉的球賽
+  // 每天早上三點自動執行
+  @Cron('0 0 3 * * *')
+  async cleanGames() {
+    let games =  await this.findGameShouldClose()
+    let apis = games.map(game => this.closeGame(game.game_id))
+    return await Promise.all(apis)
   }
 
   // game user part
@@ -193,7 +214,7 @@ export class GamesService {
   }
 
   async findGameUser(queryObj: { game_user_id?: string, game_ticket_id }) {
-    let where:any = {}
+    let where: any = {}
     if (queryObj.game_user_id)
       where.game_user_id = queryObj.game_user_id
     if (queryObj.game_ticket_id)

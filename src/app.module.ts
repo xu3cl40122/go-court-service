@@ -11,6 +11,7 @@ import { GamesModule } from './module/games/games.module';
 import { MessageModule } from './module/message/message.module';
 import { FilesModule } from './module/files/files.module';
 import { TicketsModule } from './module/tickets/tickets.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as AWS from 'aws-sdk';
 
 @Module({
@@ -21,9 +22,8 @@ import * as AWS from 'aws-sdk';
         console.log('process.env.NODE_ENV', process.env.NODE_ENV)
         return Object.assign(setting, {
           // 只有在開發模式啟用同步 避免損害 production 資料
-          // synchronize: process.env.NODE_ENV === 'development',
+          synchronize: process.env.NODE_ENV === 'development',
         })
-
       }
     }),
     // can get env setting
@@ -32,6 +32,7 @@ import * as AWS from 'aws-sdk';
       envFilePath: 'app.env'
     }),
 
+    ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
     CourtModule,
