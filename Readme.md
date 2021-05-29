@@ -1,33 +1,25 @@
-## go-court-api 
-
-### cmd
-- backup db
-`docker exec -t {container_id}  pg_dumpall -c -U postgres > dump.sql`
-- import db
-`cat dump.sql | docker exec -i {container_id} psql -U postgres`
-- cd to container
-`docker exec -it <mycontainer> bash`
-- run psql on container
-`docker exec -it mydb psql -U postgres -d your_database`
-- import csv to table 
-`\COPY court FROM '/var/lib/postgresql/data/court.csv' DELIMITER ',' CSV HEADER;`
+# GO COURT 球場資源分享平臺
 
 
-### db 
-- foreign key
-``` sql
-alter table game 
-  add column court_id integer, 
-  add constraint court_constraint
-  foreign key (court_id) 
-  references court (court_id);
-```
+## 功能簡介
+### 球場地圖
+* 透過[全國場館資訊網](https://iplay.sa.gov.tw/WebAPI)提供之 API 取得全臺球場資訊，經過簡單的資料整理後，開放縣市區及球場名稱等參數供前端查詢。
+* 前端使用 Google Map Api 進行資料視覺化。
 
+### 使用者管理
+* Passport.js、JWT 實作登入驗證。
+* 使用 AWS SES 發送驗證信。
 
+### 球賽管理
+* 使用者可透過球賽起訖時間、球賽類型、縣市區、球賽名稱等參數搜尋球賽。
+* 球賽建立者可設定球賽上架時間、是否公開(非公開球賽不會被搜尋到，只有知道連結者可參加)。
+* 票券轉送功能。
+* 入場時透過 QRcode 驗證票券。
+* 排程定時關閉應關閉之球賽(已超過預定結束時間)。
+* 目前不處理金流部分。
 
-### 遇過的問題
+### 檔案管理
+* 使用 AWS S3 建立檔案 CRUD API。
 
-- backup db 
-- gcp storage 權限
-- import csv to table 
-- winodws 要開 docker volume share 權限
+### 評論系統
+
