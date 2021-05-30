@@ -43,20 +43,23 @@ export class CreateGameDto {
 	@ApiProperty()
 	total_player_number: number;
 
-	@IsEnum(CourtType)
+	// @IsEnum(CourtType)
+	@IsNotEmpty()
 	@ApiProperty({ enum: CourtType })
 	court_type: string;
 
-	@IsEnum(GameType)
+	// @IsEnum(GameType)
+	@IsNotEmpty()
 	@ApiProperty({ enum: GameType })
 	game_type: string;
 
 	@IsString()
+	@IsOptional()
 	@ApiProperty()
 	description: string;
 
 	@IsOptional()
-	@IsEnum(GameStatus)
+	// @IsEnum(GameStatus)
 	@ApiProperty({ enum: GameStatus })
 	game_status: string;
 

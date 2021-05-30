@@ -34,14 +34,14 @@ export class GamesController {
     private ticketsService: TicketsService) { }
 
   @Get()
-  @ApiOperation({ summary: '搜尋球賽' })
+  @ApiOperation({ summary: '查詢球賽' })
   @ApiOkResponse({ type: getManyResponseFor(Game) })
   async queryGames(@Query() query: GameQueryDto): Promise<Object> {
     return await this.gamesService.queryGames(query);
   }
 
   @Get('/host')
-  @ApiOperation({ summary: '搜尋登入者主辦的球賽' })
+  @ApiOperation({ summary: '查詢登入者主辦的球賽' })
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse({ type: getManyResponseFor(Game) })

@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { getManyResponseFor } from '../../methods/spec'
 import { GameTicket } from '../../entity/game_ticket.entity'
+import { GameStock } from '../../entity/game_stock.entity'
 import { PageQueryDto, TicketQueryDto } from '../../dto/query.dto'
 import { TransferTicketDto } from '../../dto/ticket.dto'
 
@@ -68,7 +69,7 @@ export class TicketsController {
     schema: {
       type: 'array',
       items: {
-        default: {
+        example: {
           "stock_amount": 1,
           "game_stock_id": "7e72e5e5-17be-4efd-92dd-db6481ebe400"
         }
@@ -78,7 +79,17 @@ export class TicketsController {
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse()
   async checkout(@Req() req, @Body() carts) {
+    let specs: GameStock[] = await Promise.all(carts.map(d => this.ticketsService.findGameStock(d.game_stock_id)))
+    // 檢查要買的票是否在上架期間並且比賽未開始
+    if (specs.some(spec => {
+      let game = spec.game_detail
+      let isSelling = game.sell_start_at < new Date() && game.sell_end_at > new Date()
+      return game.game_status !== 'PENDING' || !isSelling
+    }))
+      throw new HttpException('some game is not available', HttpStatus.BAD_REQUEST)
+
     carts.forEach(d => d.owner_user_id = req.payload.user_id)
+
     let tickets
 
     try {

@@ -58,22 +58,12 @@ export class TicketsService {
     })
   }
 
-  // async queryTicketsOfUserId(owner_user_id, reqQuery: TicketQueryDto): Promise<Object> {
-  //   let [page, size] = [Number(reqQuery.page ?? 0), Number(reqQuery.size ?? 10)]
-
-  //   let [content, total] = await this.gameTicketsRepository.findAndCount({
-  //     take: size,
-  //     skip: page * size,
-  //     relations: ['game_detail', 'game_detail.court_detail', 'game_stock_detail'],
-  //     where: [{ owner_user_id }],
-  //     order: {
-  //       created_at: 'DESC'
-  //     }
-  //   })
-
-  //   let totalPage = Math.ceil(total / size)
-  //   return { content, page, size, total, totalPage }
-  // }
+  async findGameStock(game_stock_id: string): Promise<GameStock> {
+    return await this.gameStockRepository.findOne({
+      where: { game_stock_id },
+      relations: ['game_detail']
+    })
+  }
 
   // 找到所有票券(不分頁)
   async getGameTickets(game_id, option: { relations?: string[] }) {

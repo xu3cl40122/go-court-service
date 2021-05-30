@@ -3,6 +3,7 @@ import {
   Column, ManyToOne, Check, JoinColumn
 } from "typeorm";
 import { Game } from './game.entity'
+import { CreateGameDto } from '../dto/game.dto'
 import { ApiProperty } from '@nestjs/swagger';
 
 
@@ -21,7 +22,7 @@ export class GameStock {
   @ManyToOne(() => Game, game => game.game_id)
   @JoinColumn({ name: 'game_id' })
   @ApiProperty()
-  game_detail: string
+  game_detail: CreateGameDto
 
   @Column({
     type: "varchar",
