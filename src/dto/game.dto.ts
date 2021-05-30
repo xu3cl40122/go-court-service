@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsUUID, IsString, IsOptional, IsDateString, IsNumber, IsEnum, IsBoolean } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
 	CourtType,
 	GameType,
@@ -77,3 +77,5 @@ export class CreateGameDto {
 	deleted: boolean;
 
 }
+
+export class UpdateGameDro extends PartialType(CreateGameDto) {}

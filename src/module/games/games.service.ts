@@ -7,7 +7,7 @@ import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
 import { GameQueryDto } from '../../dto/query.dto';
 import { ILike } from "typeorm";
-import { CreateGameDto } from '../../dto/game.dto'
+import { CreateGameDto, UpdateGameDro } from '../../dto/game.dto'
 import { Cron } from '@nestjs/schedule';
 
 interface IBuyGameTicketBody {
@@ -37,7 +37,7 @@ export class GamesService {
 
   async queryGames(query: GameQueryDto): Promise<Object> {
     let [page, size] = [Number(query.page ?? 0), Number(query.size ?? 10)]
-    let { city_code, dist_code, court_type, game_type, start, end, game_name } = query
+    let { city_code, dist_code, court_type, game_type, start, end, game_name, game_status } = query
     let where: any = {
       is_public: true,
       sell_start_at: LessThanOrEqual(new Date()),
@@ -51,8 +51,10 @@ export class GamesService {
       where.game_start_at = MoreThanOrEqual(start)
     if (end)
       where.game_end_at = LessThanOrEqual(end)
-    if (query.game_name)
-      where.game_name = ILike(`%${query.game_name}%`)
+    if (game_name)
+      where.game_name = ILike(`%${game_name}%`)
+    if (game_status)
+      where.game_status = game_status
 
     let [content, total] = await this.gamesRepository.findAndCount({
       join: {
@@ -129,7 +131,7 @@ export class GamesService {
     return await this.gamesRepository.save(game);
   }
 
-  async updateGame(game_id: string, gameData: CreateGameDto): Promise<Object> {
+  async updateGame(game_id: string, gameData: UpdateGameDro): Promise<Object> {
     const game = new Game();
     let columns = [
       'game_name',
@@ -176,7 +178,7 @@ export class GamesService {
   // 每天早上三點自動執行
   @Cron('0 0 3 * * *')
   async cleanGames() {
-    let games =  await this.findGameShouldClose()
+    let games = await this.findGameShouldClose()
     let apis = games.map(game => this.closeGame(game.game_id))
     return await Promise.all(apis)
   }

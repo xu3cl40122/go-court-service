@@ -54,8 +54,6 @@ export class TicketsController {
     let ticket = await this.ticketsService.findGameTicket({ game_ticket_id });
     if (!ticket)
       throw new HttpException('ticket not found', HttpStatus.BAD_REQUEST)
-    if (ticket.owner_user_id !== user_id && ticket.game_detail.host_user_id !== user_id)
-      throw new HttpException('only host of game or owner of ticket can access', HttpStatus.FORBIDDEN)
     return ticket
   }
 

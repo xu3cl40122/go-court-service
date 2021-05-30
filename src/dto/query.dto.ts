@@ -34,6 +34,8 @@ export class GameQueryDto extends PageQueryDto {
   end?: Date
   @ApiProperty({ required: false })
   game_name?: string
+  @ApiProperty({ required: false })
+  game_status?: string
 }
 export class CourtQueryDto extends PageQueryDto {
   // @ApiProperty({ required: false })

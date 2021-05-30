@@ -18,9 +18,9 @@ import { GamesService } from './games.service';
 import { UsersService } from '../users/users.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { CreateGameDto } from '../../dto/game.dto'
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { Game } from '../../entity/game.entity'
+import { CreateGameDto, UpdateGameDro } from '../../dto/game.dto'
 import { GameQueryDto, PageQueryDto } from '../../dto/query.dto'
 import { getManyResponseFor } from '../../methods/spec'
 import { GameUser } from '../../entity/game_user.entity';
@@ -72,7 +72,7 @@ export class GamesController {
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiCreatedResponse({ type: Game })
-  async updateGame(@Req() req, @Param('game_id') game_id, @Body() body: CreateGameDto): Promise<Object> {
+  async updateGame(@Req() req, @Param('game_id') game_id, @Body() body: UpdateGameDro): Promise<Object> {
     let game = await this.gamesService.findGame({ game_id })
     if (game.host_user_id !== req.payload.user_id)
       throw new HttpException('only admin or host user can update', HttpStatus.FORBIDDEN)
