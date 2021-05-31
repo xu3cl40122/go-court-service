@@ -7,7 +7,7 @@ import { GameTicket } from '../../entity/game_ticket.entity';
 import { GameStock } from '../../entity/game_stock.entity';
 import { GameQueryDto } from '../../dto/query.dto';
 import { ILike } from "typeorm";
-import { CreateGameDto, UpdateGameDro } from '../../dto/game.dto'
+import { CreateGameDto, UpdateGameDto } from '../../dto/game.dto'
 import { Cron } from '@nestjs/schedule';
 
 interface IBuyGameTicketBody {
@@ -131,7 +131,7 @@ export class GamesService {
     return await this.gamesRepository.save(game);
   }
 
-  async updateGame(game_id: string, gameData: UpdateGameDro): Promise<Object> {
+  async updateGame(game_id: string, gameData: UpdateGameDto): Promise<Object> {
     const game = new Game();
     let columns = [
       'game_name',

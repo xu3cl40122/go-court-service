@@ -78,4 +78,4 @@ export class CreateGameDto {
 
 }
 
-export class UpdateGameDro extends PartialType(CreateGameDto) {}
+export class UpdateGameDto extends PartialType(CreateGameDto) {}
