@@ -1,5 +1,9 @@
 # GO COURT 球場資源分享平臺
 
+* [前端專案](https://github.com/xu3cl40122/go-court-vue)
+
+* [API 規格](spec.yml)
+
 
 ## 功能簡介
 ### 球場地圖
@@ -21,5 +25,6 @@
 ### 檔案管理
 * 使用 AWS S3 建立檔案 CRUD API。
 
-### 評論系統
+### 評論管理
+* [評論管理](https://github.com/xu3cl40122/comment-service)設計成獨立的服務，呼叫時需帶上 token，以管理操作評論之權限。
 
