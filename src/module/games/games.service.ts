@@ -170,7 +170,7 @@ export class GamesService {
     return this.gamesRepository.update(game_id, { game_status: 'FINISHED' })
   }
 
-  async initGame(game_id: string) {
+  async initGame(game_id: string): Promise<Object> {
     return this.gamesRepository.update(game_id, { game_status: 'PLAYING' })
   }
 

@@ -30,7 +30,6 @@ import { GameUser } from '../../entity/game_user.entity';
 export class GamesController {
   constructor(
     private readonly gamesService: GamesService,
-    private readonly usersService: UsersService,
     private ticketsService: TicketsService) { }
 
   @Get()
