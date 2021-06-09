@@ -30,8 +30,9 @@ export class UsersService {
       'email',
       'phone',
       'gender',
-      'avatar_url',
       'description',
+      'register_by',
+      'external_id',
       'meta',
     ]
     columns.forEach(key => user[key] = userData[key])
@@ -106,11 +107,9 @@ export class UsersService {
       'profile_name',
       'phone',
       'gender',
-      'avatar_url',
       'description',
       'meta',
     ]
-    userData.meta = userData.meta ?? {}
     let changedPart = {}
     columns.forEach(key => userData[key] != null ? changedPart[key] = userData[key] : null)
     let { raw } = await this.usersRepository

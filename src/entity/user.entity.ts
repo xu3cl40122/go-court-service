@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Col
 import { ApiProperty } from '@nestjs/swagger';
 export enum UserStatus { INITIAL, ENABLED, DISABLED }
 export enum UserRoles { ADMIN, NORMAL_USER }
+export enum RegisterByEnum { FACEBOOK, EMAIL }
 
 @Entity()
 export class User {
@@ -27,19 +28,19 @@ export class User {
 
 	@Column({
 		type: "varchar",
-		length: 50,
-		nullable: true
-	})
-	@ApiProperty()
-	gender: string;
-
-	@Column({
-		type: "varchar",
 		length: 150,
 		nullable: true
 	})
 	@ApiProperty()
 	phone: string;
+
+	@Column({
+		type: "varchar",
+		length: 50,
+		nullable: true
+	})
+	@ApiProperty()
+	gender: string;
 
 	@Column({
 		type: "varchar",
@@ -61,12 +62,28 @@ export class User {
 
 	@Column({
 		type: "varchar",
+		enum: RegisterByEnum,
+		default: "EMAIL",
+		length: 50,
+	})
+	@ApiProperty({ enum: RegisterByEnum, default: 'EMAIL' })
+	register_by: string;
+
+	@Column({
+		type: "varchar",
 		enum: UserRoles,
 		default: "NORMAL_USER",
 		length: 50,
 	})
 	@ApiProperty({ enum: UserRoles, default: 'NORMAL_USER' })
 	user_role: string;
+
+	@Column({
+		type: "varchar",
+		nullable: true
+	})
+	@ApiProperty({ description: '用來存第三方登入的 id' })
+	external_id: string;
 
 	@Column({
 		type: "varchar",
