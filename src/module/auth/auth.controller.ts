@@ -46,10 +46,14 @@ export class AuthController {
   }
 
   @Post('/social_login')
-  @ApiOperation({ summary: '第三方登入' })
+  @ApiOperation({ summary: '第三方登入，如果是第一次登入會自動建立 user entity' })
   @ApiOkResponse({ description: 'JWT 放在 response header 的 Authorization' })
   async authLogin(@Body() body: AuthLoginDto, @Res() res: Response) {
-    let { email, profile_name, external_id, meta, register_by } = body
+    let { email, profile_name, external_id, meta, register_by, accessToken } = body
+    let isTokenPass = await this.authService.verifyFbToken(accessToken)
+    if (!isTokenPass)
+      throw new HttpException('invalid access token', HttpStatus.UNAUTHORIZED)
+      
     let user = await this.usersService.findUserWithPwd({ email })
     // 第一次第三方登入的話先建立 user entity
     if (!user) {
@@ -64,10 +68,8 @@ export class AuthController {
       user = await this.usersService.addUser(userData)
     }
 
- 
-
-    let accessToken = this.authService.signAccessToken(user)
-    res.append('Authorization', `Bearer ${accessToken}`)
+    let jwtToken = this.authService.signAccessToken(user)
+    res.append('Authorization', `Bearer ${jwtToken}`)
     res.status(200).send()
   }
 }
