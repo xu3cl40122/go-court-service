@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, HttpModule } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
@@ -10,6 +10,10 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     UsersModule,
     PassportModule,
+    HttpModule.register({
+      timeout: 5000,
+      maxRedirects: 5,
+    }),
     // 需要非同步載入 確保已經拿回 env config
     JwtModule.registerAsync({
       useFactory: () => ({
@@ -24,5 +28,5 @@ import { JwtStrategy } from './jwt.strategy';
   exports: [AuthService, JwtModule]
 })
 export class AuthModule {
-  constructor() {}
+  constructor() { }
 }

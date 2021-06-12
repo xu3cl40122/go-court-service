@@ -146,7 +146,10 @@ export class UserController {
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse({ type: User })
   async getSelfProfile(@Req() req): Promise<User> {
-    return this.userService.findUser({ user_id: req.payload.user_id })
+    let user = await this.userService.findUser({ user_id: req.payload.user_id })
+    if (!user)
+      throw new HttpException('user_id not found', HttpStatus.NOT_FOUND)
+    return user
   }
 
   @Put('profile')

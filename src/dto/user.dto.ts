@@ -1,11 +1,12 @@
 import { IsEmail, IsNotEmpty, IsUUID, IsString, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { RegisterByEnum } from '../entity/user.entity'
 
 export class UserDto {
 
 	@IsUUID()
 	@IsOptional()
-	user_id: string;
+	user_id?: string;
 
 	@IsString()
 	@IsNotEmpty()
@@ -19,12 +20,12 @@ export class UserDto {
 	@IsString()
 	@IsOptional()
 	@ApiProperty()
-	gender: string;
+	gender?: string;
 
 	@IsString()
 	@IsNotEmpty()
 	@ApiProperty()
-	phone: string;
+	phone?: string;
 
 	@IsNotEmpty()
 	@IsString()
@@ -34,11 +35,21 @@ export class UserDto {
 	@IsString()
 	@IsOptional()
 	@ApiProperty()
-	description: string;
+	description?: string;
+
+	@IsString()
+	@IsOptional()
+	@ApiProperty({ default: 'EMAIL', enum: RegisterByEnum })
+	register_by?: string;
+
+	@IsString()
+	@IsOptional()
+	@ApiProperty({ description: '用來存第三方登入的 id' })
+	external_id?: string;
 
 	@IsOptional()
 	@ApiProperty()
-	meta: object;
+	meta?: object;
 
 }
 
