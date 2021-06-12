@@ -11,7 +11,7 @@
       "dist/entity/**/*{.ts,.js}"
    ],
    "migrations": [
-      "dist/entity/**/*{.ts,.js}"
+      "src/migration/**/*{.ts,.js}"
    ],
    "subscribers": [
       "dist/entity/**/*{.ts,.js}"
