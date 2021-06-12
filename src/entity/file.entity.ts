@@ -60,13 +60,6 @@ export class File {
 	description: string;
 
 	@Column({
-		type: "text",
-		nullable: true
-	})
-	@ApiProperty()
-	test_mg: string;
-
-	@Column({
 		type: "jsonb",
 		default: {}
 	})
