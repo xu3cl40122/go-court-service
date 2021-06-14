@@ -6,17 +6,20 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity'
 import { Game } from './game.entity'
 import { GameStock } from './game_stock.entity'
+import { UpdateGameDto } from '../dto/game.dto'
 
 export enum GameTicketStatus { PENDING, PLAYING, VERIFIED }
 
 
 @Entity()
 export class GameTicket {
-  constructor(params: { game_id, game_stock_id, owner_user_id }) {
-    let { game_id, game_stock_id, owner_user_id } = params || {}
+  constructor(params: { game_id, game_stock_id, owner_user_id, game_ticket_status?}) {
+    let { game_id, game_stock_id, owner_user_id, game_ticket_status } = params || {}
     this.game_id = game_id
     this.game_stock_id = game_stock_id
     this.owner_user_id = owner_user_id
+
+    game_ticket_status ? this.game_ticket_status = game_ticket_status : null
   }
   @PrimaryGeneratedColumn("uuid")
   @ApiProperty()
@@ -29,7 +32,7 @@ export class GameTicket {
   @ManyToOne(() => Game, game => game.game_id)
   @JoinColumn({ name: 'game_id' })
   @ApiProperty()
-  game_detail: Game
+  game_detail: UpdateGameDto
 
   @Column("uuid")
   @ApiProperty()

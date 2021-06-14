@@ -13,7 +13,6 @@ import {
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { MessageService } from '../message/message.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserDto, PasswordDto } from '../../dto/user.dto'
 import { VerificationDto, SendEmailDto } from '../../dto/verification.dto'
@@ -27,7 +26,6 @@ import { PageQueryDto } from '../../dto/query.dto'
 export class UserController {
   constructor(
     private readonly userService: UsersService,
-    private readonly messageService: MessageService
   ) { }
 
   // admin create user (省略驗證 email)

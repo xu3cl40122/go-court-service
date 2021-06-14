@@ -134,7 +134,7 @@ export class GamesController {
     if (game.host_user_id !== req.payload.user_id)
       throw new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN)
     if (game.game_status !== 'PENDING')
-      throw new HttpException('you can init game which game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE)
+      throw new HttpException('game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE)
 
     return await this.gamesService.initGame(game_id)
   }

@@ -15,6 +15,7 @@ describe('GamesController', () => {
   let gamesController: GamesController;
   let gamesService: GamesService;
   let req = { payload: { user_id: 'test_user_id' } }
+  let mockGame = new Game()
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -51,85 +52,66 @@ describe('GamesController', () => {
     gamesService = moduleRef.get<GamesService>(GamesService);
     gamesController = moduleRef.get<GamesController>(GamesController);
     req = { payload: { user_id: 'test_user_id' } }
+    mockGame = new Game()
+    mockGame.game_id = 'game_id'
+    mockGame.host_user_id = 'host_user_id'
+    mockGame.game_status = 'PENDING'
   });
 
   describe('Update Game', () => {
     it('should throw error if not requested by game host user', async () => {
-      let game = new Game()
-      let game_id = 'game_id'
-      let body: any = {}
-      game.host_user_id = 'host_user_id'
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
-      // 用箭頭函式寫才能 catch 到 throw error
-      // ref: https://stackoverflow.com/questions/54204720/how-to-unit-test-exception-thrown-in-typescript-classs-constructor-in-jestjs
-      expect(() => gamesController.updateGame(req, game_id, body)).rejects.toThrow()
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
+      expect(gamesController.updateGame(req, mockGame.game_id, mockGame)).rejects.toThrow()
     });
 
     it('should update success if request by game host user', async () => {
-      let game = new Game()
-      let game_id = 'game_id'
-      let body: any = {}
-      game.host_user_id = req.payload.user_id
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
-      jest.spyOn(gamesService, 'updateGame').mockImplementation(async () => game);
-      expect(await gamesController.updateGame(req, game_id, body)).toEqual(game)
+      mockGame.host_user_id = req.payload.user_id
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
+      jest.spyOn(gamesService, 'updateGame').mockImplementation(async () => mockGame);
+      expect(await gamesController.updateGame(req, mockGame.game_id, mockGame)).toEqual(mockGame)
     });
   });
 
   describe('Update Game Stock', () => {
     it('should throw error if not requested by game host user', async () => {
-      let game = new Game()
-      let game_id = 'game_id'
-      let body: any = []
-      game.host_user_id = 'host_user_id'
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
-      expect(() => gamesController.updateGameStock(req, game_id, body)).rejects.toThrow()
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
+      expect(gamesController.updateGameStock(req, mockGame.game_id, mockGame)).rejects.toThrow()
     });
 
     it('should update success if request by game host user', async () => {
-      let game = new Game()
-      let game_id = 'game_id'
       let body: any = []
-      game.host_user_id = req.payload.user_id
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
+      mockGame.host_user_id = req.payload.user_id
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
       jest.spyOn(gamesService, 'updateGameStock').mockImplementation(async () => body);
-      expect(await gamesController.updateGameStock(req, game_id, body)).toBe(body)
+      expect(await gamesController.updateGameStock(req, mockGame.game_id, body)).toBe(body)
     });
   });
 
   describe('Init game', () => {
     it('should throw error if not requested by game host user', async () => {
-      let game = new Game()
-      let game_id = 'game_id'
-      game.host_user_id = 'host_user_id'
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
-      await expect(() => gamesController.initGame(req, game_id))
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
+      await expect(gamesController.initGame(req, mockGame.game_id))
         .rejects.toEqual(new HttpException('only admin or host user can init game', HttpStatus.FORBIDDEN))
     });
 
     it('should throw error if game status is not PENDING', async () => {
-      let game = new Game()
-      game.game_status = 'PLAYING'
-      game.host_user_id = req.payload.user_id
-      let game_id = 'game_id'
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
+      mockGame.game_status = 'PLAYING'
+      mockGame.host_user_id = req.payload.user_id
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
       // 這樣寫才能精準測試 throw 出來的東西是否符合預期
-      await expect(() => gamesController.initGame(req, game_id)).rejects.toEqual(new HttpException('you can init game which game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE))
+      await expect(gamesController.initGame(req, mockGame.game_id))
+        .rejects.toEqual(new HttpException('game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE))
     });
 
     it('should change game status from PENDING TO PLAYING if request by host user', async () => {
-      let game = new Game()
-      game.game_status = 'PENDING'
-      game.host_user_id = req.payload.user_id
+      mockGame.game_status = 'PENDING'
+      mockGame.host_user_id = req.payload.user_id
 
-      let resGame = new Game()
-      game.game_status = 'PLAYING'
-      game.host_user_id = req.payload.user_id
 
       let game_id = 'game_id'
-      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => game);
-      jest.spyOn(gamesService, 'initGame').mockImplementation(async () => resGame);
-      expect(() => gamesController.initGame(req, game_id)).rejects.toEqual(resGame)
+      jest.spyOn(gamesService, 'findGame').mockImplementation(async () => mockGame);
+      jest.spyOn(gamesService, 'initGame').mockImplementation(async () => mockGame);
+      expect(await gamesController.initGame(req, game_id)).toEqual(mockGame)
     });
 
   });
