@@ -55,22 +55,22 @@ export class UsersService {
       .execute();
   }
 
-  async sendVerification(email: string, verification_type: string, expireMinute = 5, resendMinute = 3) {
-    let user = await this.findUser({ email })
-    if (!user) throw 'user not found'
-    if (verification_type === 'ENABLE_ACCOUNT' && user.user_status !== 'INITIAL') throw 'not initial user'
+  async sendVerification(user: User, verification_type: string, expireMinute = 5) {
+    // let user = await this.findUser({ email })
+    // if (!user) throw 'user not found'
+    // if (verification_type === 'ENABLE_ACCOUNT' && user.user_status !== 'INITIAL') throw 'not initial user'
 
-    let { user_id } = user
-    let lastVerification = await this.findVerification({ user_id })
-    if (lastVerification && !dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
-      throw 'request later'
-
+    // let { user_id } = user
+    // let lastVerification = await this.findVerification({ user_id })
+    // if (lastVerification && !dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
+    //   throw 'request later'
+    let { email, user_id } = user
     let verification_code = generateVerificationCode()
     let expires_at = dayjs().add(expireMinute, 'minute')
     let verifaction = new Verification({ user_id, verification_type, verification_code, expires_at })
     await this.verificationRepository.save(verifaction)
     return await this.messageService.sendMessage({
-      ToAddresses: [user.email],
+      ToAddresses: [email],
       template: 'VERIFY_EMAIL',
       args: { verification_code }
     })
@@ -157,7 +157,7 @@ export class UsersService {
       .getOne();
   }
 
-  async findVerification(query: { user_id?: string, verification_id?: string }) {
+  async findVerification(query: { user_id?: string, verification_id?: string, verification_type?: string }) {
     return await this.verificationRepository.findOne({
       where: query,
       order: { created_at: 'DESC' }

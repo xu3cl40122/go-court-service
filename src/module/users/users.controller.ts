@@ -20,13 +20,21 @@ import { User } from '../../entity/user.entity';
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { getManyResponseFor } from '../../methods/spec'
 import { PageQueryDto } from '../../dto/query.dto'
+import * as dayjs from 'dayjs'
 
 @ApiTags('users')
 @Controller()
 export class UserController {
+  resendMinute: number
+  expireMinute: number
   constructor(
     private readonly userService: UsersService,
-  ) { }
+  ) {
+    this.resendMinute = 1
+    this.expireMinute = 5
+  }
+
+
 
   // admin create user (省略驗證 email)
   @Post('admin/users')
@@ -85,17 +93,20 @@ export class UserController {
   @Put('users/verification')
   @ApiOperation({ summary: '發送啟用帳號驗證信' })
   async sendVerification(@Body() reqBody: SendEmailDto) {
+    let { email } = reqBody
     let verification_type = 'ENABLE_ACCOUNT'
-    return this.userService.sendVerification(reqBody.email, verification_type)
-      .catch(error => {
-        if (error === 'user not found')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
-        if (error === 'not initial user')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
-        if (error === 'request later')
-          throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
-        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
-      })
+    let user = await this.userService.findUser({ email })
+    if (!user)
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
+    if (user.user_status !== 'INITIAL')
+      throw new HttpException('not initial user', HttpStatus.BAD_REQUEST)
+
+    let { user_id } = user
+    let lastVerification = await this.userService.findVerification({ user_id, verification_type })
+    if (lastVerification && !dayjs(lastVerification.created_at).add(this.resendMinute, 'minute').isBefore(dayjs()))
+      throw new HttpException('request later', HttpStatus.BAD_REQUEST)
+      
+    return this.userService.sendVerification(user, verification_type, this.expireMinute)
   }
 
   @Put('users/enable')

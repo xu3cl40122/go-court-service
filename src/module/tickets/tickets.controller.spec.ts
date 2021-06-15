@@ -227,7 +227,6 @@ describe('TicketsController', () => {
     })
 
     it('should throw error if game_id not equal', async () => {
-      // gameTicket.game_id = 'verify_game_id'
       mockGame.game_id = 'verify_game_id'
       mockGame.host_user_id = req.payload.user_id
       jest.spyOn(ticketsService, 'findGameTicket').mockImplementation(async () => gameTicket)
