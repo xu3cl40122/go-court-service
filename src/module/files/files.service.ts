@@ -121,7 +121,6 @@ export class FilesService {
       Key: file.file_id,
     };
     let res:any = await s3.getObject(params).promise().catch((err) => { throw err })
-    console.log(res)
     return res
     // file.file_url = `https://${this.bucketName}.s3-us-west-2.amazonaws.com/${file.file_id}`
     // return this.updateFile(file.file_id, file)

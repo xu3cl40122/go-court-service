@@ -50,13 +50,18 @@ export class MessageService {
   }
 
   // 驗證碼信件 template
-  setVerificationCodeTemplate(args: { verification_code: string }): Object {
+  setVerificationCodeTemplate(args: { verification_code: string, verification_type: string }): Object {
+    const useForMap = {
+      ENABLE_ACCOUNT: '啟用帳號',
+      FORGOT_PASSWORD : '忘記密碼'
+    }
+    let useFor = useForMap[args.verification_type]
     const charset = "UTF-8";
-    const subject = "GO COURT 驗證信"
-    const body_text = `您的驗證碼為 ${args.verification_code}`
+    const subject = `GO COURT ${useFor}驗證信`
+    const body_text = `您的${useFor}驗證碼為 ${args.verification_code}`
     const body_html = `<html>
 <body>
-  <h4>您的驗證碼</h4>
+  <h4>您的${useFor}驗證碼為</h4>
   <h2>${args.verification_code}</h2>
 
   <p>GO COURT Team</p>

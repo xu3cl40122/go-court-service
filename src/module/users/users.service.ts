@@ -42,11 +42,8 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
-  async changePassword(user: User, body: { password: string, new_password: string }): Promise<Object> {
-    let pass = await bcrypt.compare(body.password, user.password).catch(() => false)
-    if (!pass) throw new HttpException('wrong password', HttpStatus.UNAUTHORIZED)
-    if (body.new_password.length < 8) throw new HttpException('invalid password formate', HttpStatus.BAD_REQUEST)
-    let hashedPwd = await bcrypt.hash(body.new_password, this.saltRound)
+  async changePassword(user: User, new_password: string): Promise<Object> {
+    let hashedPwd = await bcrypt.hash(new_password, this.saltRound)
     return await this.usersRepository
       .createQueryBuilder()
       .update(User)
@@ -56,14 +53,6 @@ export class UsersService {
   }
 
   async sendVerification(user: User, verification_type: string, expireMinute = 5) {
-    // let user = await this.findUser({ email })
-    // if (!user) throw 'user not found'
-    // if (verification_type === 'ENABLE_ACCOUNT' && user.user_status !== 'INITIAL') throw 'not initial user'
-
-    // let { user_id } = user
-    // let lastVerification = await this.findVerification({ user_id })
-    // if (lastVerification && !dayjs(lastVerification.created_at).add(resendMinute, 'minute').isBefore(dayjs()))
-    //   throw 'request later'
     let { email, user_id } = user
     let verification_code = generateVerificationCode()
     let expires_at = dayjs().add(expireMinute, 'minute')
@@ -72,32 +61,17 @@ export class UsersService {
     return await this.messageService.sendMessage({
       ToAddresses: [email],
       template: 'VERIFY_EMAIL',
-      args: { verification_code }
+      args: { verification_code, verification_type }
     })
 
   }
 
-  async enableUser(email: string, verification_code: string) {
-    let user = await this.findUser({ email })
-    if (!user)
-      throw 'user not found'
-    let { user_id } = user
-    let verification_type = 'ENABLE_ACCOUNT'
-    let verification = await this.verificationRepository.findOne({
-      where: { user_id, verification_type },
-      order: { created_at: 'DESC' }
-    })
-
-    if (dayjs(verification.expires_at).isBefore(dayjs()))
-      throw 'code expired'
-    if (verification.verification_code !== verification_code)
-      throw 'wrong verification code'
-
+  async enableUser(user_id: string) {
     return await this.usersRepository
       .createQueryBuilder()
       .update(User)
       .set({ user_status: 'ENABLED' })
-      .where("user_id = :user_id", { user_id })
+      .where({ user_id })
       .returning('*')
       .execute();
   }
@@ -174,6 +148,10 @@ export class UsersService {
       .execute();
 
     return raw
+  }
+
+  async updateVerification(verifaction: Verification) {
+    return await this.verificationRepository.update(verifaction.verification_id, verifaction)
   }
 
 }

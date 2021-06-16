@@ -163,7 +163,6 @@ export class GamesController {
 
     return await this.gamesService.initGameUsers(game_id, game_users)
       .catch(error => {
-        console.log(error)
         throw new HttpException('init game failed', HttpStatus.INTERNAL_SERVER_ERROR)
       })
   }
