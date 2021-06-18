@@ -131,13 +131,6 @@ export class UsersService {
       .getOne();
   }
 
-  async findVerification(query: { user_id?: string, verification_id?: string, verification_type?: string }) {
-    return await this.verificationRepository.findOne({
-      where: query,
-      order: { created_at: 'DESC' }
-    })
-  }
-
   async deleteUser(user_id) {
     let { raw } = await this.usersRepository
       .createQueryBuilder()
@@ -148,6 +141,13 @@ export class UsersService {
       .execute();
 
     return raw
+  }
+
+  async findVerification(query: { user_id?: string, verification_id?: string, verification_type?: string, is_used?: boolean }) {
+    return await this.verificationRepository.findOne({
+      where: query,
+      order: { created_at: 'DESC' }
+    })
   }
 
   async updateVerification(verifaction: Verification) {

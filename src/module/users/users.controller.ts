@@ -101,9 +101,9 @@ export class UserController {
       throw new HttpException('not initial user', HttpStatus.BAD_REQUEST)
 
     let { user_id } = user
-    let lastVerification = await this.userService.findVerification({ user_id, verification_type })
+    let lastVerification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
     if (lastVerification && !dayjs(lastVerification.created_at).add(this.resendMinute, 'minute').isBefore(dayjs()))
-      throw new HttpException('request later', HttpStatus.BAD_REQUEST)
+      throw new HttpException('request later', HttpStatus.NOT_ACCEPTABLE)
 
     return this.userService.sendVerification(user, verification_type, this.expireMinute)
   }
@@ -117,15 +117,14 @@ export class UserController {
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
     let { user_id } = user
     let verification_type = 'ENABLE_ACCOUNT'
-    let verification = await this.userService.findVerification({ user_id, verification_type })
+    let verification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
 
     if (dayjs(verification.expires_at).isBefore(dayjs()))
       throw new HttpException('code expired', HttpStatus.NOT_ACCEPTABLE)
     if (verification.verification_code !== verification_code)
       throw new HttpException('wrong verification code', HttpStatus.BAD_REQUEST)
-    
-      // 使該驗證碼過期不能再用
-    verification.expires_at = new Date()
+
+    verification.is_used = true
     this.userService.updateVerification(verification)
     return this.userService.enableUser(user_id)
   }
@@ -154,9 +153,9 @@ export class UserController {
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
 
     let { user_id } = user
-    let lastVerification = await this.userService.findVerification({ user_id, verification_type })
+    let lastVerification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
     if (lastVerification && !dayjs(lastVerification.created_at).add(this.resendMinute, 'minute').isBefore(dayjs()))
-      throw new HttpException('request later', HttpStatus.BAD_REQUEST)
+      throw new HttpException('request later', HttpStatus.NOT_ACCEPTABLE)
 
     return this.userService.sendVerification(user, verification_type)
   }
@@ -171,15 +170,14 @@ export class UserController {
       throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
     let { user_id } = user
     let verification_type = 'FORGOT_PASSWORD'
-    let verification = await this.userService.findVerification({ user_id, verification_type })
+    let verification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
 
     if (dayjs(verification.expires_at).isBefore(dayjs()))
       throw new HttpException('code expired', HttpStatus.NOT_ACCEPTABLE)
     if (verification.verification_code !== verification_code)
       throw new HttpException('wrong verification code', HttpStatus.BAD_REQUEST)
 
-    // 使該驗證碼過期不能再用
-    verification.expires_at = new Date()
+    verification.is_used = true
     this.userService.updateVerification(verification)
     return this.userService.changePassword(user, password)
   }

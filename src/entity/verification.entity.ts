@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  Column, ManyToOne,JoinColumn
+  Column, ManyToOne, JoinColumn
 } from "typeorm";
 import { User } from './user.entity'
 import { ApiProperty } from '@nestjs/swagger';
@@ -46,6 +46,13 @@ export class Verification {
   })
   @ApiProperty()
   verification_type: string
+
+  @Column({
+    type: 'boolean',
+    default: false
+  })
+  @ApiProperty()
+  is_used: boolean
 
   @Column({
     type: 'timestamp',
