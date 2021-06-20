@@ -1,8 +1,8 @@
 # GO COURT 球場資源分享平臺
+* [demo](https://tom-lee.site/) 部屬於 AWS EC2。
+* 後端用 NestJs 搭配 PostgreSQL 實作 RESTful API ([API 規格](spec.yaml))。
+* [前端專案](https://github.com/xu3cl40122/go-court-vue)用 Vue3 開發。
 
-* 後端用 Nest.js 搭配 PostgreSQL 實作 RESTful API ([API 規格](spec.yml))
-* [前端專案](https://github.com/xu3cl40122/go-court-vue)用 Vue3 開發
-* 部屬於 AWS EC2
 
 ## 功能簡介
 ### 球場地圖
@@ -11,6 +11,7 @@
 
 ### 使用者管理
 * Passport.js、JWT 實作登入驗證。
+* Facebook 第三方登入。
 * 使用 AWS SES 發送驗證信。
 
 ### 球賽管理
@@ -18,6 +19,7 @@
 * 球賽建立者可設定球賽上架時間、是否公開(非公開球賽不會被搜尋到，只有知道連結者可參加)。
 * 票券轉送功能。
 * 入場時透過 QRcode 驗證票券。
+* Redis 紀錄近期熱門球賽。
 * 排程定時關閉應關閉之球賽(已超過預定結束時間)。
 * 目前不處理金流部分。
 
@@ -25,5 +27,5 @@
 * 使用 AWS S3 建立檔案 CRUD API。
 
 ### 評論管理
-* [評論管理](https://github.com/xu3cl40122/comment-service)設計成獨立的服務，用 Nest.js 配上 MongoDB 開發，呼叫時需帶上 token，以管理操作評論之權限。
+* [評論管理](https://github.com/xu3cl40122/comment-service)設計成獨立的服務，用 NestJs 配上 MongoDB 開發，呼叫時需帶上 token，以管理操作評論之權限。
 
