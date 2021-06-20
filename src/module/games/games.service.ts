@@ -9,16 +9,26 @@ import { GameQueryDto } from '../../dto/query.dto';
 import { ILike } from "typeorm";
 import { CreateGameDto, UpdateGameDto } from '../../dto/game.dto'
 import { Cron } from '@nestjs/schedule';
+import { redisKey } from '../../methods/redis'
+import { RedisService, } from 'nestjs-redis';
+import IORedis = require('ioredis');
 
 @Injectable()
 export class GamesService {
+  redisClient: IORedis.Redis
+
   constructor(
     @InjectRepository(Game) private gamesRepository: Repository<Game>,
     @InjectRepository(GameUser) private gameUsersRepository: Repository<GameUser>,
     @InjectRepository(GameTicket) private gameTicketsRepository: Repository<GameTicket>,
     @InjectRepository(GameStock) private gameStockRepository: Repository<GameStock>,
+    private redisService: RedisService,
 
-  ) { }
+  ) {
+    this.redisClient = this.redisService.getClient()
+  }
+
+
 
   // game part 
   async findGame(query: { game_id?: string }) {
@@ -167,13 +177,24 @@ export class GamesService {
     return this.gamesRepository.update(game_id, { game_status: 'PLAYING' })
   }
 
-  // 關掉過期但沒關閉的球賽
-  // 每天早上三點自動執行
+  /**
+   * 關掉過期但沒關閉的球賽
+   * 每天早上三點自動執行
+   */
   @Cron('0 0 3 * * *')
   async cleanGames() {
     let games = await this.findGameShouldClose()
     let apis = games.map(game => this.closeGame(game.game_id))
     return await Promise.all(apis)
+  }
+
+  /**
+  * 清除 redis 資料
+  * 每周一早上三點自動執行
+  */
+  @Cron('0 0 3 * * 1')
+  async cleanRedis() {
+    return this.redisClient.del(redisKey.GAME_VIEWS)
   }
 
   // game user part

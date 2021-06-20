@@ -11,11 +11,8 @@ import {
   HttpStatus,
   UseGuards,
   Req,
-  Inject,
-  CACHE_MANAGER
 } from '@nestjs/common';
 import { GamesService } from './games.service';
-import { UsersService } from '../users/users.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
@@ -24,16 +21,20 @@ import { CreateGameDto, UpdateGameDto } from '../../dto/game.dto'
 import { GameQueryDto, PageQueryDto } from '../../dto/query.dto'
 import { getManyResponseFor } from '../../methods/spec'
 import { GameUser } from '../../entity/game_user.entity';
-import { Cache } from 'cache-manager'
-
+import { RedisService, } from 'nestjs-redis';
+import IORedis = require('ioredis');
+import { redisKey } from '../../methods/redis'
 @Controller('games')
 @ApiTags('games')
 export class GamesController {
+  redisClient: IORedis.Redis
   constructor(
     private readonly gamesService: GamesService,
     private ticketsService: TicketsService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) { }
+    private redisService: RedisService,
+  ) {
+    this.redisClient = this.redisService.getClient()
+  }
 
   @Get()
   @ApiOperation({ summary: '查詢球賽' })
@@ -52,10 +53,25 @@ export class GamesController {
     return await this.gamesService.findGamesOfHost(host_user_id, query);
   }
 
+  @Get('/popular')
+  @ApiOperation({ summary: '查詢熱門球賽' })
+  @ApiOkResponse({ type: getManyResponseFor(Game) })
+  async queryPopularGames(@Req() req, @Query() query: PageQueryDto): Promise<Object> {
+    let game_ids = await this.redisClient.zrevrangebyscore(redisKey.GAME_VIEWS, '+inf', '-inf')
+    let size = req.size || 3
+    game_ids = game_ids.slice(0, size)
+    let games = await Promise.all(game_ids.map(game_id => this.gamesService.findGame({ game_id })))
+    return {
+      content: games,
+      size
+    }
+  }
+
   @Get('/:game_id')
   @ApiOperation({ summary: '取得球賽詳細資訊' })
   @ApiOkResponse({ type: Game })
   async getGameById(@Param('game_id') game_id): Promise<Object> {
+    this.redisClient.zincrby(redisKey.GAME_VIEWS, 1, game_id)
     return await this.gamesService.findGame({ game_id });
   }
 

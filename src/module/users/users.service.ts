@@ -1,11 +1,6 @@
 import {
   Injectable,
-  HttpException,
-  HttpStatus,
-  CACHE_MANAGER,
-  Inject,
 } from '@nestjs/common';
-import { Cache } from 'cache-manager'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
@@ -24,7 +19,6 @@ export class UsersService {
     @InjectRepository(User) private usersRepository: Repository<User>,
     @InjectRepository(Verification) private verificationRepository: Repository<Verification>,
     private messageService: MessageService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
   saltRound = 10
 

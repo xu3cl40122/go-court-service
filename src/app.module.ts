@@ -12,7 +12,7 @@ import { MessageModule } from './module/message/message.module';
 import { FilesModule } from './module/files/files.module';
 import { TicketsModule } from './module/tickets/tickets.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { RedisModule } from './module/redis/redis.module';
+import { RedisModule } from 'nestjs-redis'
 
 import * as AWS from 'aws-sdk';
 
@@ -32,6 +32,15 @@ import * as AWS from 'aws-sdk';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: 'app.env'
+    }),
+
+    RedisModule.forRootAsync({
+      useFactory: async () => {
+        return {
+          host: process.env.REDIS_HOST,
+          port: Number(process.env.REDIS_PORT),
+        }
+      }
     }),
 
     ScheduleModule.forRoot(),

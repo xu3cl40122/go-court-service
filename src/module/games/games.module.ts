@@ -4,7 +4,6 @@ import { GamesController } from './games.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';
 import { TicketsModule } from '../tickets/tickets.module';
-import { RedisModule } from '../redis/redis.module'
 import { Game } from '../../entity/game.entity';
 import { GameUser } from '../../entity/game_user.entity';
 import { GameTicket } from '../../entity/game_ticket.entity';
@@ -14,7 +13,6 @@ import { GameStock } from '../../entity/game_stock.entity';
   // 要把要用到 Repository import 進來
   imports: [
     UsersModule,
-    RedisModule,
     forwardRef(() => TicketsModule),
     TypeOrmModule.forFeature([Game, GameUser, GameTicket, GameStock])
   ],
