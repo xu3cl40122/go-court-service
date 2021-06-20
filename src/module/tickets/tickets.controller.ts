@@ -77,6 +77,8 @@ export class TicketsController {
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiOkResponse()
   async checkout(@Req() req, @Body() carts) {
+    if (!Array.isArray(carts) || carts.length === 0)
+      throw new HttpException('request body should be array of target spec', HttpStatus.BAD_REQUEST)
     let specs: GameStock[] = await Promise.all(carts.map(d => this.ticketsService.findGameStock(d.game_stock_id)))
     // 檢查要買的票是否在上架期間並且比賽未開始
     if (specs.some(spec => {

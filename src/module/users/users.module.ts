@@ -10,7 +10,7 @@ import { MessageModule } from '../message/message.module'
   // 要把要用到 Repository import 進來
   imports: [
     TypeOrmModule.forFeature([User, Verification]),
-    MessageModule
+    MessageModule,
   ],
   controllers: [UserController],
   providers: [UsersService],

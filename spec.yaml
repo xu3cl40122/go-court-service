@@ -23,6 +23,15 @@ components:
           type: string
         description:
           type: string
+        register_by:
+          type: string
+          default: EMAIL
+          enum:
+            - FACEBOOK
+            - EMAIL
+        external_id:
+          type: string
+          description: 用來存第三方登入的 id
         meta:
           type: object
       required:
@@ -32,6 +41,8 @@ components:
         - phone
         - password
         - description
+        - register_by
+        - external_id
         - meta
     User:
       type: object
@@ -42,9 +53,9 @@ components:
           type: string
         email:
           type: string
-        gender:
-          type: string
         phone:
+          type: string
+        gender:
           type: string
         password:
           type: string
@@ -55,12 +66,21 @@ components:
             - ENABLED
             - DISABLED
           default: INITIAL
+        register_by:
+          type: string
+          enum:
+            - FACEBOOK
+            - EMAIL
+          default: EMAIL
         user_role:
           type: string
           enum:
             - ADMIN
             - NORMAL_USER
           default: NORMAL_USER
+        external_id:
+          type: string
+          description: 用來存第三方登入的 id
         description:
           type: string
         meta:
@@ -75,11 +95,13 @@ components:
         - user_id
         - profile_name
         - email
-        - gender
         - phone
+        - gender
         - password
         - user_status
+        - register_by
         - user_role
+        - external_id
         - description
         - meta
         - created_at
@@ -111,6 +133,19 @@ components:
       required:
         - password
         - new_password
+    ResetPasswordDto:
+      type: object
+      properties:
+        email:
+          type: string
+        verification_code:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - verification_code
+        - password
     GetManyResponseForUser:
       type: object
       properties:
@@ -143,6 +178,32 @@ components:
       required:
         - email
         - password
+    AuthLoginDto:
+      type: object
+      properties:
+        email:
+          type: string
+        external_id:
+          type: string
+        profile_name:
+          type: string
+        accessToken:
+          type: string
+        register_by:
+          type: string
+          example: FACEBOOK
+          enum:
+            - FACEBOOK
+            - EMAIL
+        meta:
+          type: object
+      required:
+        - email
+        - external_id
+        - profile_name
+        - accessToken
+        - register_by
+        - meta
     Court:
       type: object
       properties:
@@ -256,7 +317,7 @@ components:
         - description
         - open_status
         - meta
-    CreateGameDto:
+    UpdateGameDto:
       type: object
       properties:
         game_id:
@@ -293,22 +354,6 @@ components:
           type: boolean
         deleted:
           type: boolean
-      required:
-        - game_id
-        - game_name
-        - court_id
-        - game_start_at
-        - game_end_at
-        - sell_start_at
-        - sell_end_at
-        - total_player_number
-        - court_type
-        - game_type
-        - description
-        - game_status
-        - meta
-        - is_public
-        - deleted
     GameStock:
       type: object
       properties:
@@ -317,7 +362,7 @@ components:
         game_id:
           type: string
         game_detail:
-          $ref: '#/components/schemas/CreateGameDto'
+          $ref: '#/components/schemas/UpdateGameDto'
         spec_name:
           type: string
         stock_amount:
@@ -449,7 +494,7 @@ components:
         - size
         - total
         - totalPage
-    UpdateGameDto:
+    CreateGameDto:
       type: object
       properties:
         game_id:
@@ -486,6 +531,22 @@ components:
           type: boolean
         deleted:
           type: boolean
+      required:
+        - game_id
+        - game_name
+        - court_id
+        - game_start_at
+        - game_end_at
+        - sell_start_at
+        - sell_end_at
+        - total_player_number
+        - court_type
+        - game_type
+        - description
+        - game_status
+        - meta
+        - is_public
+        - deleted
     GameTicket:
       type: object
       properties:
@@ -494,7 +555,7 @@ components:
         game_id:
           type: string
         game_detail:
-          $ref: '#/components/schemas/Game'
+          $ref: '#/components/schemas/UpdateGameDto'
         game_stock_id:
           type: string
         game_stock_detail:
@@ -851,6 +912,38 @@ paths:
           description: ''
       tags:
         - users
+  /forgot/verification:
+    put:
+      operationId: UserController_forgotPassword
+      summary: 發忘記密碼驗證碼
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailDto'
+      responses:
+        '200':
+          description: ''
+      tags:
+        - users
+  /forgot/reset_password:
+    put:
+      operationId: UserController_resetPassword
+      summary: 用驗證碼重設密碼
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordDto'
+      responses:
+        '200':
+          description: ''
+      tags:
+        - users
   /profile:
     get:
       operationId: UserController_getSelfProfile
@@ -980,6 +1073,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: JWT 放在 response header 的 Authorization
+      tags:
+        - auth
+  /auth/social_login:
+    post:
+      operationId: AuthController_authLogin
+      summary: 第三方登入，如果是第一次登入會自動建立 user entity
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginDto'
       responses:
         '200':
           description: JWT 放在 response header 的 Authorization
@@ -1227,6 +1336,40 @@ paths:
         - name: Authorization
           in: header
           description: JWT
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetManyResponseForGame'
+      tags:
+        - games
+  /games/popular:
+    get:
+      operationId: GamesController_queryPopularGames
+      summary: 查詢熱門球賽
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: order
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: sort_by
+          required: false
+          in: query
           schema:
             type: string
       responses:

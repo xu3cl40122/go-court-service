@@ -53,7 +53,7 @@ export class AuthController {
     let isTokenPass = await this.authService.verifyFbToken(accessToken)
     if (!isTokenPass)
       throw new HttpException('invalid access token', HttpStatus.UNAUTHORIZED)
-      
+
     let user = await this.usersService.findUserWithPwd({ email })
     // 第一次第三方登入的話先建立 user entity
     if (!user) {
@@ -65,7 +65,7 @@ export class AuthController {
         register_by,
         meta
       }
-      user = await this.usersService.addUser(userData)
+      user = await this.usersService.addUser(userData, 'ENABLED')
     }
 
     let jwtToken = this.authService.signAccessToken(user)

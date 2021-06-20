@@ -18,15 +18,13 @@ interface IBuyGameTicketBody {
 @Injectable()
 export class TicketsService {
   constructor(
-    @InjectRepository(Game) private gamesRepository: Repository<Game>,
-    @InjectRepository(GameUser) private gameUsersRepository: Repository<GameUser>,
     @InjectRepository(GameTicket) private gameTicketsRepository: Repository<GameTicket>,
     @InjectRepository(GameStock) private gameStockRepository: Repository<GameStock>,
     private gamesService: GamesService
   ) { }
 
   // ticket part
-  async checkout(carts: IBuyGameTicketBody[]) {
+  async checkout(carts: IBuyGameTicketBody[]): Promise<GameTicket[]> {
     let resArr = []
     await getManager().transaction(async manager => {
       for (let cartItem of carts) {
@@ -116,7 +114,7 @@ export class TicketsService {
     })
   }
 
-  async transferTicket(game_ticket_id: string, sender_id: string, receiver_id: string, meta: any = {}) {
+  async transferTicket(game_ticket_id: string, sender_id: string, receiver_id: string, meta: any = {}): Promise<object> {
     if (!meta.transfer_record) meta.transfer_record = []
     meta.transfer_record.push({ from: sender_id, to: receiver_id, updated_at: new Date().getTime() })
     return this.gameTicketsRepository.update(game_ticket_id, { owner_user_id: receiver_id, meta })

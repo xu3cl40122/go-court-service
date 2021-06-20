@@ -23,7 +23,7 @@ export class UserDto {
 	gender?: string;
 
 	@IsString()
-	@IsNotEmpty()
+	@IsOptional()
 	@ApiProperty()
 	phone?: string;
 

@@ -1,8 +1,9 @@
 import {
   Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
-  Column, ManyToOne,
+  Column, ManyToOne, JoinColumn
 } from "typeorm";
 import { User } from './user.entity'
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum VerificationType { ENABLE_ACCOUNT, FORGOT_PASSWORD }
 
@@ -17,15 +18,25 @@ export class Verification {
   }
 
   @PrimaryGeneratedColumn("uuid")
+  @ApiProperty()
   verification_id: string;
 
-  @ManyToOne(() => User, user => user.user_id)
+  @Column({
+    type: 'varchar',
+  })
+  @ApiProperty()
   user_id: string
+
+  @ManyToOne(() => User, user => user.user_id)
+  @JoinColumn({ name: 'user_id' })
+  @ApiProperty()
+  user_detail: User;
 
   @Column({
     type: 'varchar',
     length: '50'
   })
+  @ApiProperty()
   verification_code: string
 
   @Column({
@@ -33,17 +44,28 @@ export class Verification {
     length: '50',
     enum: VerificationType
   })
+  @ApiProperty()
   verification_type: string
+
+  @Column({
+    type: 'boolean',
+    default: false
+  })
+  @ApiProperty()
+  is_used: boolean
 
   @Column({
     type: 'timestamp',
   })
+  @ApiProperty()
   expires_at: Date
 
   @CreateDateColumn()
+  @ApiProperty()
   created_at: Date;
 
   @UpdateDateColumn()
+  @ApiProperty()
   updated_at: Date;
 
 }

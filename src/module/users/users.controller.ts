@@ -13,22 +13,27 @@ import {
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { MessageService } from '../message/message.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { UserDto, PasswordDto } from '../../dto/user.dto'
-import { VerificationDto, SendEmailDto } from '../../dto/verification.dto'
+import { VerificationDto, SendEmailDto, ResetPasswordDto } from '../../dto/verification.dto'
 import { User } from '../../entity/user.entity';
 import { ApiOkResponse, ApiCreatedResponse, ApiHeader, ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { getManyResponseFor } from '../../methods/spec'
 import { PageQueryDto } from '../../dto/query.dto'
+import * as dayjs from 'dayjs'
+import * as bcrypt from 'bcrypt'
 
 @ApiTags('users')
 @Controller()
 export class UserController {
+  resendMinute: number
+  expireMinute: number
   constructor(
     private readonly userService: UsersService,
-    private readonly messageService: MessageService
-  ) { }
+  ) {
+    this.resendMinute = 3
+    this.expireMinute = 5
+  }
 
   // admin create user (省略驗證 email)
   @Post('admin/users')
@@ -36,10 +41,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   @ApiCreatedResponse({ type: User })
-  async adminAddUser(@Req() req, @Body() reqBody: UserDto): Promise<User> {
+  async adminAddUser(@Req() req, @Body() body: UserDto): Promise<User> {
     if (req.payload.user_role !== 'ADMIN')
       throw new HttpException('permission denied', HttpStatus.FORBIDDEN)
-    return this.userService.addUser(reqBody, 'ENABLED')
+    return this.userService.addUser(body, 'ENABLED')
       .catch(error => {
         if (error.code === '23505')
           throw new HttpException('duplicate email', HttpStatus.BAD_REQUEST)
@@ -75,8 +80,8 @@ export class UserController {
   @Post('register')
   @ApiOperation({ summary: '註冊帳號(產生的 user entity 需透過 email 驗證才能啟用)' })
   @ApiCreatedResponse({ type: User })
-  async register(@Body() reqBody: UserDto): Promise<User> {
-    return this.userService.addUser(reqBody)
+  async register(@Body() body: UserDto): Promise<User> {
+    return this.userService.addUser(body)
       .catch(error => {
         if (error.code === '23505')
           throw new HttpException('duplicate email', HttpStatus.BAD_REQUEST)
@@ -86,35 +91,42 @@ export class UserController {
 
   @Put('users/verification')
   @ApiOperation({ summary: '發送啟用帳號驗證信' })
-  async sendVerification(@Body() reqBody: SendEmailDto) {
+  async sendVerification(@Body() body: SendEmailDto) {
+    let { email } = body
     let verification_type = 'ENABLE_ACCOUNT'
-    return this.userService.sendVerification(reqBody.email, verification_type)
-      .catch(error => {
-        if (error === 'user not found')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
-        if (error === 'not initial user')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
-        if (error === 'request later')
-          throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
-        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
-      })
+    let user = await this.userService.findUser({ email })
+    if (!user)
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
+    if (user.user_status !== 'INITIAL')
+      throw new HttpException('not initial user', HttpStatus.BAD_REQUEST)
+
+    let { user_id } = user
+    let lastVerification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
+    if (lastVerification && !dayjs(lastVerification.created_at).add(this.resendMinute, 'minute').isBefore(dayjs()))
+      throw new HttpException('request later', HttpStatus.NOT_ACCEPTABLE)
+
+    return this.userService.sendVerification(user, verification_type, this.expireMinute)
   }
 
   @Put('users/enable')
   @ApiOperation({ summary: '用驗證碼啟用帳號' })
   async enableUser(@Req() req, @Body() body: VerificationDto) {
     let { verification_code, email } = body
+    let user = await this.userService.findUser({ email })
+    if (!user)
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
+    let { user_id } = user
+    let verification_type = 'ENABLE_ACCOUNT'
+    let verification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
 
-    return this.userService.enableUser(email, verification_code)
-      .catch(error => {
-        if (error === 'user not found')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
-        if (error === 'code expired')
-          throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
-        if (error === 'wrong verification code')
-          throw new HttpException(error, HttpStatus.BAD_REQUEST)
-        throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
-      })
+    if (dayjs(verification.expires_at).isBefore(dayjs()))
+      throw new HttpException('code expired', HttpStatus.NOT_ACCEPTABLE)
+    if (verification.verification_code !== verification_code)
+      throw new HttpException('wrong verification code', HttpStatus.BAD_REQUEST)
+
+    verification.is_used = true
+    this.userService.updateVerification(verification)
+    return this.userService.enableUser(user_id)
   }
 
   @Put('users/password')
@@ -123,22 +135,52 @@ export class UserController {
   @ApiHeader({ name: 'Authorization', description: 'JWT' })
   async changePassword(@Req() req, @Body() body: PasswordDto) {
     let user = await this.userService.findUserWithPwd({ user_id: req.payload.user_id })
-    return this.userService.changePassword(user, body)
+    let pass = await bcrypt.compare(body.password, user.password)
+    if (!pass) throw new HttpException('wrong password', HttpStatus.UNAUTHORIZED)
+    if (body.new_password.length < 8) throw new HttpException('invalid password formate', HttpStatus.BAD_REQUEST)
+
+    return this.userService.changePassword(user, body.new_password)
   }
 
-  // // 發 email 驗證碼
-  // @Put('forgot/verification')
-  // async forgotPassword(@Body() reqBody) {
-  //   let verification_type = 'FORGOT_PASSWORD'
-  //   return this.userService.sendVerification(reqBody.email, verification_type)
-  //     .catch(error => {
-  //       if (error === 'user not found')
-  //         throw new HttpException(error, HttpStatus.BAD_REQUEST)
-  //       if (error === 'request later')
-  //         throw new HttpException(error, HttpStatus.NOT_ACCEPTABLE)
-  //       throw new HttpException('INTERNAL_SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR)
-  //     })
-  // }
+  // 發 email 驗證碼
+  @Put('forgot/verification')
+  @ApiOperation({ summary: '發忘記密碼驗證碼' })
+  async forgotPassword(@Body() body: SendEmailDto) {
+    let { email } = body
+    let verification_type = 'FORGOT_PASSWORD'
+    let user = await this.userService.findUser({ email })
+    if (!user)
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
+
+    let { user_id } = user
+    let lastVerification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
+    if (lastVerification && !dayjs(lastVerification.created_at).add(this.resendMinute, 'minute').isBefore(dayjs()))
+      throw new HttpException('request later', HttpStatus.NOT_ACCEPTABLE)
+
+    return this.userService.sendVerification(user, verification_type)
+  }
+
+  // 發 email 驗證碼
+  @Put('forgot/reset_password')
+  @ApiOperation({ summary: '用驗證碼重設密碼' })
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    let { verification_code, email, password } = body
+    let user = await this.userService.findUser({ email })
+    if (!user)
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST)
+    let { user_id } = user
+    let verification_type = 'FORGOT_PASSWORD'
+    let verification = await this.userService.findVerification({ user_id, verification_type, is_used: false })
+
+    if (dayjs(verification.expires_at).isBefore(dayjs()))
+      throw new HttpException('code expired', HttpStatus.NOT_ACCEPTABLE)
+    if (verification.verification_code !== verification_code)
+      throw new HttpException('wrong verification code', HttpStatus.BAD_REQUEST)
+
+    verification.is_used = true
+    this.userService.updateVerification(verification)
+    return this.userService.changePassword(user, password)
+  }
 
   @Get('profile')
   @ApiOperation({ summary: '取得登入帳號 profile' })

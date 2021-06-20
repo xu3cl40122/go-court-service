@@ -15,4 +15,5 @@ FROM node:14-alpine
 WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app ./
 ENV NODE_ENV=production
-CMD ["npm", "run", "start:prod"]
+# CMD ["npm", "run", "start:prod"]
+CMD ["sh startApp.prod.sh"]

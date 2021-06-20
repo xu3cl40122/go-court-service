@@ -16,3 +16,16 @@ export class VerificationDto {
 	@ApiProperty()
 	verification_code: string;
 }
+export class ResetPasswordDto {
+	@IsEmail()
+	@ApiProperty()
+	email: string;
+
+	@IsNotEmpty()
+	@ApiProperty()
+	verification_code: string;
+
+	@IsNotEmpty()
+	@ApiProperty()
+	password: string;
+}
