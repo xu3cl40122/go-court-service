@@ -12,7 +12,7 @@ import {
   UseGuards,
   Req,
   Inject,
-  forwardRef
+  CACHE_MANAGER
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { UsersService } from '../users/users.service';
@@ -24,13 +24,16 @@ import { CreateGameDto, UpdateGameDto } from '../../dto/game.dto'
 import { GameQueryDto, PageQueryDto } from '../../dto/query.dto'
 import { getManyResponseFor } from '../../methods/spec'
 import { GameUser } from '../../entity/game_user.entity';
+import { Cache } from 'cache-manager'
 
 @Controller('games')
 @ApiTags('games')
 export class GamesController {
   constructor(
     private readonly gamesService: GamesService,
-    private ticketsService: TicketsService) { }
+    private ticketsService: TicketsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) { }
 
   @Get()
   @ApiOperation({ summary: '查詢球賽' })

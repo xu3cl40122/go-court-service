@@ -2,11 +2,14 @@ import {
   Injectable,
   HttpException,
   HttpStatus,
+  CACHE_MANAGER,
+  Inject,
 } from '@nestjs/common';
+import { Cache } from 'cache-manager'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
-import { Verification, VerificationType } from '../../entity/verification.entity';
+import { Verification } from '../../entity/verification.entity';
 import { generateVerificationCode } from '../../methods/'
 import { UserDto } from '../../dto/user.dto'
 import { MessageService } from '../message/message.service'
@@ -14,12 +17,14 @@ import * as dayjs from 'dayjs'
 import * as bcrypt from 'bcrypt'
 import { PageQueryDto } from '../../dto/query.dto'
 
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
     @InjectRepository(Verification) private verificationRepository: Repository<Verification>,
-    private messageService: MessageService
+    private messageService: MessageService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
   saltRound = 10
 

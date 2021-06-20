@@ -12,6 +12,8 @@ import { MessageModule } from './module/message/message.module';
 import { FilesModule } from './module/files/files.module';
 import { TicketsModule } from './module/tickets/tickets.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from './module/redis/redis.module';
+
 import * as AWS from 'aws-sdk';
 
 @Module({
@@ -40,6 +42,7 @@ import * as AWS from 'aws-sdk';
     MessageModule,
     FilesModule,
     TicketsModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

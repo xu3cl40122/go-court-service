@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../entity/user.entity';
 import { Verification } from '../../entity/verification.entity';
 import { MessageModule } from '../message/message.module'
+import { RedisModule } from '../redis/redis.module'
 
 @Module({
   // 要把要用到 Repository import 進來
   imports: [
     TypeOrmModule.forFeature([User, Verification]),
-    MessageModule
+    MessageModule,
+    RedisModule
   ],
   controllers: [UserController],
   providers: [UsersService],

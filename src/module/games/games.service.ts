@@ -10,13 +10,6 @@ import { ILike } from "typeorm";
 import { CreateGameDto, UpdateGameDto } from '../../dto/game.dto'
 import { Cron } from '@nestjs/schedule';
 
-interface IBuyGameTicketBody {
-  game_id: string,
-  game_stock_id: string,
-  owner_user_id: string,
-  stock_amount: string,
-}
-
 @Injectable()
 export class GamesService {
   constructor(
