@@ -5,8 +5,10 @@ services:
     image: xu3cl40122/gc-service:latest
     networks:
       - postgres_network
+      - redis_network
     depends_on: 
       - postgres
+      - redis
     ports:
       - 3000:3000
     restart: unless-stopped
@@ -24,23 +26,21 @@ services:
     networks:
       - postgres_network
     restart: unless-stopped
-
-  # pgadmin:
-  #   container_name: pgadmin_container
-  #   image: dpage/pgadmin4
-  #   env_file:
-  #     - db.env
-  #   volumes:
-  #     - pgadmin:/root/.pgadmin
-  #   ports:
-  #     - "${PGADMIN_PORT:-5050}:80"
-  #   networks:
-  #     - postgres_network
-  #   restart: unless-stopped
+  
+  redis:
+    restart: unless-stopped
+    container_name: redis
+    image: redis:alpine
+    networks:
+      - redis_network
+    ports:
+      - 6379:6379
+    volumes:
+      - /data/redis-data:/data
 
 networks:
   postgres_network:
+  redis_network:
 
 volumes:
   postgres:
-  # pgadmin:
