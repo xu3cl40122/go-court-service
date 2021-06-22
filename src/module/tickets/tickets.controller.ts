@@ -83,7 +83,7 @@ export class TicketsController {
     // 檢查要買的票是否在上架期間並且比賽未開始
     if (specs.some(spec => {
       let game = spec.game_detail
-      let isSelling = game.sell_start_at < new Date() && game.sell_end_at > new Date()
+      let isSelling = game.sell_start_at < new Date()
       return game.game_status !== 'PENDING' || !isSelling
     }))
       throw new HttpException('some game is not available', HttpStatus.BAD_REQUEST)

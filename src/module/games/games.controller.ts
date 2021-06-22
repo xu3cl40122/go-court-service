@@ -71,8 +71,9 @@ export class GamesController {
   @ApiOperation({ summary: '取得球賽詳細資訊' })
   @ApiOkResponse({ type: Game })
   async getGameById(@Param('game_id') game_id): Promise<Object> {
+    let game = await this.gamesService.findGame({ game_id });
     this.redisClient.zincrby(redisKey.GAME_VIEWS, 1, game_id)
-    return await this.gamesService.findGame({ game_id });
+    return game
   }
 
   @Post()
@@ -155,6 +156,8 @@ export class GamesController {
     if (game.game_status !== 'PENDING')
       throw new HttpException('game_status is not PENDING', HttpStatus.NOT_ACCEPTABLE)
 
+    // 開始後就從熱門清單中移除 
+    // this.redisClient.zrem(redisKey.GAME_VIEWS, game_id)
     return await this.gamesService.initGame(game_id)
   }
 
