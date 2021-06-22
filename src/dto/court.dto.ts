@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsString, IsNotEmpty, IsOptional, IsBoolean, IsNumber, IsEnum } from 'class-validator';
-import { CourtType } from '../entity/game.entity';
+import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsNumber, IsEnum } from 'class-validator';
+import { CourtOpenStatus } from '../entity/court.entity';
 export class CourtDto {
-  @IsUUID()
   @IsOptional()
   @ApiProperty()
   court_id: number;
@@ -27,12 +26,10 @@ export class CourtDto {
   @ApiProperty()
   dist_code: string;
 
-  @IsNumber()
   @IsNotEmpty()
   @ApiProperty()
   latitude: number;
 
-  @IsNumber()
   @IsNotEmpty()
   @ApiProperty()
   longitude: number;
@@ -52,7 +49,7 @@ export class CourtDto {
   @ApiProperty()
   description: string;
 
-  @IsEnum(CourtType)
+  @IsEnum(CourtOpenStatus)
   @ApiProperty()
   open_status: string;
 
