@@ -23,6 +23,8 @@
 - build docker image 
 `docker build -t {image_tag} -f {dockerfile} .`
 ex: `docker build -t xu3cl40122/gc-service -f Dockerfile.prod . --nocache`
+- 去除 shell script 不必要字元(script 莫名壞掉先用這個檢查)
+`tr -d "\r" <./updateDocker.sh > updateDocker.sh`
 
 
 
