@@ -28,4 +28,6 @@
 
 ### 評論管理
 * [評論管理](https://github.com/xu3cl40122/comment-service)設計成獨立的服務，用 NestJs 配上 MongoDB 開發，呼叫時需帶上 token，以管理操作評論之權限。
+* 目前用於對球場進行評價。
+
 
