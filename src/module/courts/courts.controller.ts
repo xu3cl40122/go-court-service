@@ -57,7 +57,7 @@ export class CourtController {
   @ApiOkResponse({ type: Court })
   async updateCourtById(@Param('court_id') court_id, @Body() body: CourtDto): Promise<Object> {
     let court = await this.courtService.updateCourtById(court_id, body);
-    if (!court) throw new HttpException('user_id not found', HttpStatus.BAD_REQUEST)
+    if (!court) throw new HttpException('court not found', HttpStatus.BAD_REQUEST)
     return court
   }
 
