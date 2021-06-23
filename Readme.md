@@ -1,7 +1,8 @@
 # GO COURT 球場資源分享平臺
 * [demo](https://tom-lee.site/) 部屬於 AWS EC2。
 * 後端用 NestJs 搭配 PostgreSQL 實作 RESTful API ([API 規格](spec.yaml))。
-* [前端專案](https://github.com/xu3cl40122/go-court-vue)用 Vue3 開發。
+* [前端專案](https://github.com/xu3cl40122/go-court-vue)用 Vue3 開發(目前僅開發手機版畫面)。
+* 操作上遇到任何奇怪的地方歡迎發 issue 回報，感謝。
 
 ## Demo 影片
 * [報名球賽](https://streamable.com/jfsw21)
