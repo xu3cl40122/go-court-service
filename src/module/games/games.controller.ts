@@ -58,7 +58,7 @@ export class GamesController {
   @ApiOkResponse({ type: getManyResponseFor(Game) })
   async queryPopularGames(@Req() req, @Query() query: PageQueryDto): Promise<Object> {
     let game_ids = await this.redisClient.zrevrangebyscore(redisKey.GAME_VIEWS, '+inf', '-inf')
-    let size = req.size || 3
+    let size = Number(query.size) || 3
     game_ids = game_ids.slice(0, size)
     let games = await Promise.all(game_ids.map(game_id => this.gamesService.findGame({ game_id })))
     return {
