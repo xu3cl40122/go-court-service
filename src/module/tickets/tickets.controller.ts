@@ -23,6 +23,7 @@ import { GameTicket } from '../../entity/game_ticket.entity'
 import { GameStock } from '../../entity/game_stock.entity'
 import { PageQueryDto, TicketQueryDto } from '../../dto/query.dto'
 import { TransferTicketDto } from '../../dto/ticket.dto'
+import * as dayjs from 'dayjs'
 
 @Controller('tickets')
 @ApiTags('tickets')
@@ -83,7 +84,8 @@ export class TicketsController {
     // 檢查要買的票是否在上架期間並且比賽未開始
     if (specs.some(spec => {
       let game = spec.game_detail
-      let isSelling = game.sell_start_at < new Date()
+      // let isSelling = game.sell_start_at < new Date()
+      let isSelling = dayjs(game.sell_start_at).isBefore(dayjs())
       return game.game_status !== 'PENDING' || !isSelling
     }))
       throw new HttpException('some game is not available', HttpStatus.BAD_REQUEST)
