@@ -4,9 +4,9 @@
 * [前端專案](https://github.com/xu3cl40122/go-court-vue)用 Vue3 開發。
 
 ## Demo 影片
-* [報名球賽](https://drive.google.com/file/d/1UxSLajZ-M1Mym0NAy0lJ5erpta-4nNx5/view?usp=sharing)
-* [驗票入場](https://drive.google.com/file/d/1UxM97dZfEBECvg3wFb1PTE7zyQd7GWm-/view?usp=sharing)
-* [球場地圖](https://drive.google.com/file/d/1UoFy9zZDVgsoLIqoIdzFutFOf5QKneMW/view?usp=sharing)
+* [報名球賽](https://streamable.com/jfsw21)
+* [驗票入場](https://streamable.com/7wnm3n)
+* [球場地圖](https://streamable.com/zczx85)
 
 ## 功能簡介
 ### 球場地圖
