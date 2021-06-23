@@ -96,6 +96,9 @@ export class GamesService {
       take: size,
       skip: page * size,
       relations: ["host_user_detail", "game_stock", "court_detail"],
+      order: {
+        updated_at: "DESC"
+      }
     })
     let totalPage = Math.ceil(total / size)
     return { content, page, size, total, totalPage }
